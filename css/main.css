@@ -17,6 +17,12 @@
     line-height: 3.5vh;
     font-size: 3vh;
 }
+.small.active:before {
+    content: '●';
+}
+.small.active:after {
+    content: '●';
+}
 .large {
     height: 24vh;
     line-height: 24vh;
@@ -30,6 +36,10 @@
     border: 1px solid #ccc;
     margin: auto;
     margin-top: -2vh;
+    background-color: #fff;
+}
+.service.active {
+    background-color: #030303;
 }
 .no-border {
     border: 1px solid #fff;

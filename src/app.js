@@ -5,7 +5,7 @@
     player1: 0,
     player2: 0,
     servingPlayer: 'player1',
-    servingSide: 'left',
+    servingSide: 'right',
     challenge: null,
     winner: null
   });
@@ -41,6 +41,9 @@
   };
 
   const handOut = (rally) => {
+    if (rally.get('servingSide') === 'right') {
+      return compose(rallyWon, changeServer, switchServingSide)(rally);
+    }
     return compose(rallyWon, changeServer)(rally);
   };
 
@@ -53,8 +56,22 @@
 
   window.document.getElementById('bottom').onclick = () => {
     const lastRally = game[game.length - 1];
+    const servingSide = lastRally.get('servingSide');
     window.document.getElementById('score1').innerHTML = lastRally.get('player1');
     window.document.getElementById('score2').innerHTML = lastRally.get('player2');
+
+    let serveActive = 'serveLeft',
+      serveInactive = 'serveRight';
+    if (servingSide === 'right') {
+      serveActive = 'serveRight',
+      serveInactive = 'serveLeft';
+    }
+    window.document.getElementById(serveInactive).classList.remove('active');
+    window.document.getElementById(serveActive).classList.add('active');
+
+    window.document.getElementById(lastRally.get('servingPlayer') === 'player1' ? 'player2' : 'player1').classList.remove('active');
+    window.document.getElementById(lastRally.get('servingPlayer')).classList.add('active');
+
   };
 
 })();
