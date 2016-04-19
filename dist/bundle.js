@@ -5796,15 +5796,36 @@ function isUndefined(arg) {
   const doc = window.document;
   
   let game = [rally.rallyContainer];
+  const currentRally = () => game[game.length -1];
+  const showMessage = (messageTitle, messageDetail) => {
+    document.getElementById('message').innerHTML = `<strong>${messageTitle}</strong><br>${messageDetail || ''}`;
+    document.getElementById('message').classList.add('active');
+  };
 
   doc.getElementById('handOut').onclick = () => {
-    game.push(rally.handOut(game[game.length - 1]));
+    game.push(rally.handOut(currentRally()));
     emitter.emit('scoreUpdated');
   };
  
   doc.getElementById('pointWon').onclick = () => {
-    game.push(rally.pointWon(game[game.length - 1]));
+    game.push(rally.pointWon(currentRally()));
     emitter.emit('scoreUpdated');
+  };
+
+  doc.getElementById('let').onclick = () => {
+    game.push(rally.challengeDecision('let')(currentRally()));
+    showMessage('Yes Let');
+    setTimeout(() => document.getElementById('message').classList.remove('active'), 2000);
+  };
+
+  doc.getElementById('noLet').onclick = () => {
+    game.push(rally.challengeDecision('let')(currentRally()));
+    showMessage('No Let', 'Award point or handout');
+  };
+
+  doc.getElementById('stroke').onclick = () => {
+    game.push(rally.challengeDecision('let')(currentRally()));
+    showMessage('Stroke', 'Award point or handout');
   };
 
   emitter.on('scoreUpdated', () => {

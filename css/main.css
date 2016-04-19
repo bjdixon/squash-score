@@ -16,12 +16,10 @@
     height: 8vh;
     line-height: 3.5vh;
     font-size: 3vh;
+    text-decoration: none;
 }
-.small.active:before {
-    content: '●';
-}
-.small.active:after {
-    content: '●';
+.small.active {
+    text-decoration: underline;
 }
 .large {
     height: 24vh;
@@ -43,4 +41,24 @@
 }
 .no-border {
     border: 1px solid #fff;
+}
+#message {
+    height: 0;
+    width: 0;
+    overflow: hidden;
+}
+#message.active {
+    position: absolute;
+    top: 8vh;
+    left: 0;
+    width: 100%;
+    height: 38vh;
+    background-color: white;
+    text-align: center;
+    line-height: 17vh;
+    font-size: 3vh;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+#message.active strong {
+    font-size: 6vh;
 }
