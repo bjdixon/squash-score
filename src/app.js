@@ -1,78 +1,30 @@
 (() => {
-  const compose = require('xo-utils').compose;
-  const curry = require('xo-utils').curry;
-  const rally = require('immutable').Map({
-    player1: 0,
-    player2: 0,
-    servingPlayer: 'player1',
-    servingSide: 'right',
-    challenge: null,
-    winner: null
+  const EventEmitter = require('events');
+  const emitter = new EventEmitter();
+  const rally = require('./rally');
+  const doc = window.document;
+  
+  let game = [rally.rallyContainer];
+
+  doc.getElementById('handOut').onclick = () => {
+    game.push(rally.handOut(game[game.length - 1]));
+    emitter.emit('scoreUpdated');
+  };
+ 
+  doc.getElementById('pointWon').onclick = () => {
+    game.push(rally.pointWon(game[game.length - 1]));
+    emitter.emit('scoreUpdated');
+  };
+
+  emitter.on('scoreUpdated', () => {
+    const currentRally = game[game.length - 1];
+    const servingSide = currentRally.get('servingSide');
+    const servingPlayer = currentRally.get('servingPlayer');
+    Array.prototype.slice.call(doc.getElementsByClassName('active')).forEach((el) => el.classList.remove('active'));
+    doc.getElementById('score1').innerHTML = currentRally.get('player1');
+    doc.getElementById('score2').innerHTML = currentRally.get('player2');
+    doc.getElementById(servingSide === 'right' ? 'serveRight' : 'serveLeft').classList.add('active');
+    doc.getElementById(servingPlayer === 'player1' ? 'player1' : 'player2').classList.add('active');
   });
 
-  let game = [rally];
-  
-  const incrementScore = (rally) => {
-    const player = rally.get('servingPlayer');
-    return rally.set(player, rally.get(player) + 1);
-  };
-
-  const changeServer = (rally) => {
-    return rally.set('servingPlayer', rally.get('servingPlayer') === 'player1' ? 'player2' : 'player1');
-  };
-
-  const switchServingSide = (rally) => {
-    return rally.set('servingSide', rally.get('servingSide') === 'left' ? 'right' : 'left');
-  };
-
-  const challengeDecision = (decision) => {
-    return (rally) => {
-      return rally.set('challenge', decision);
-    };
-  };
-
-  const setWinner = (rally) => {
-    const player = rally.get('servingPlayer');
-    return rally.set('winner', player);
-  };
-
-  const rallyWon = (rally) => {
-    return compose(switchServingSide, incrementScore, setWinner)(rally);
-  };
-
-  const handOut = (rally) => {
-    if (rally.get('servingSide') === 'right') {
-      return compose(rallyWon, changeServer, switchServingSide)(rally);
-    }
-    return compose(rallyWon, changeServer)(rally);
-  };
-
-  window.document.getElementById('handOut').onclick = () => {
-    game.push(handOut(game[game.length - 1]));
-  };
-  window.document.getElementById('pointWon').onclick = () => {
-    game.push(rallyWon(game[game.length - 1]));
-  };
-
-  window.document.getElementById('bottom').onclick = () => {
-    const lastRally = game[game.length - 1];
-    const servingSide = lastRally.get('servingSide');
-    window.document.getElementById('score1').innerHTML = lastRally.get('player1');
-    window.document.getElementById('score2').innerHTML = lastRally.get('player2');
-
-    let serveActive = 'serveLeft',
-      serveInactive = 'serveRight';
-    if (servingSide === 'right') {
-      serveActive = 'serveRight',
-      serveInactive = 'serveLeft';
-    }
-    window.document.getElementById(serveInactive).classList.remove('active');
-    window.document.getElementById(serveActive).classList.add('active');
-
-    window.document.getElementById(lastRally.get('servingPlayer') === 'player1' ? 'player2' : 'player1').classList.remove('active');
-    window.document.getElementById(lastRally.get('servingPlayer')).classList.add('active');
-
-  };
-
 })();
-
