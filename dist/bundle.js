@@ -5801,6 +5801,9 @@ function isUndefined(arg) {
     document.getElementById('message').innerHTML = `<strong>${messageTitle}</strong><br>${messageDetail || ''}`;
     document.getElementById('message').classList.add('active');
   };
+  const removeMessage = (time) => {
+    setTimeout(() => document.getElementById('message').classList.remove('active'), time);
+  };
 
   doc.getElementById('handOut').onclick = () => {
     game.push(rally.handOut(currentRally()));
@@ -5815,17 +5818,29 @@ function isUndefined(arg) {
   doc.getElementById('let').onclick = () => {
     game.push(rally.challengeDecision('let')(currentRally()));
     showMessage('Yes Let');
-    setTimeout(() => document.getElementById('message').classList.remove('active'), 2000);
+    removeMessage(2000);
   };
 
   doc.getElementById('noLet').onclick = () => {
-    game.push(rally.challengeDecision('let')(currentRally()));
+    game.push(rally.challengeDecision('no let')(currentRally()));
     showMessage('No Let', 'Award point or handout');
   };
 
   doc.getElementById('stroke').onclick = () => {
-    game.push(rally.challengeDecision('let')(currentRally()));
+    game.push(rally.challengeDecision('stroke')(currentRally()));
     showMessage('Stroke', 'Award point or handout');
+  };
+
+  doc.getElementById('undo').onclick = () => {
+    if (game.length > 1) {
+      const removedRally = game.pop();
+      if (removedRally.get('player1') !== currentRally().get('player1') || removedRally.get('player2') !== currentRally().get('player2')) {
+        emitter.emit('scoreUpdated');
+      } else {
+        showMessage('Decision undone', `(${removedRally.get('challenge')})`);
+        removeMessage(1500);
+      }
+    }
   };
 
   emitter.on('scoreUpdated', () => {
