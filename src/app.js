@@ -13,11 +13,13 @@
   const removeMessage = (time) => {
     setTimeout(() => document.getElementById('message').classList.remove('active'), time);
   };
-  const switchSides = function () {
-    if (!this.classList.contains('active')) {
-      game.push(rally.switchServingSide(currentRally()));
-      emitter.emit('stateUpdated');
-    }
+  const changeDefaults = function (fn) {
+    return function () {
+      if (!this.classList.contains('active')) {
+        game.push(fn(currentRally()));
+        emitter.emit('stateUpdated');
+      }
+    };
   };
 
   doc.getElementById('handOut').onclick = () => {
@@ -58,8 +60,10 @@
     }
   };
 
-  doc.getElementById('serveLeft').onclick = switchSides;
-  doc.getElementById('serveRight').onclick = switchSides;
+  doc.getElementById('serveLeft').onclick = changeDefaults(rally.switchServingSide);
+  doc.getElementById('serveRight').onclick = changeDefaults(rally.switchServingSide);
+  doc.getElementById('player1').onclick = changeDefaults(rally.changeServer);
+  doc.getElementById('player2').onclick = changeDefaults(rally.changeServer);
 
   emitter.on('stateUpdated', () => {
     const servingSide = currentRally().get('servingSide');
