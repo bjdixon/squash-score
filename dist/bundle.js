@@ -5804,15 +5804,21 @@ function isUndefined(arg) {
   const removeMessage = (time) => {
     setTimeout(() => document.getElementById('message').classList.remove('active'), time);
   };
+  const switchSides = function () {
+    if (!this.classList.contains('active')) {
+      game.push(rally.switchServingSide(currentRally()));
+      emitter.emit('stateUpdated');
+    }
+  };
 
   doc.getElementById('handOut').onclick = () => {
     game.push(rally.handOut(currentRally()));
-    emitter.emit('scoreUpdated');
+    emitter.emit('stateUpdated');
   };
  
   doc.getElementById('pointWon').onclick = () => {
     game.push(rally.pointWon(currentRally()));
-    emitter.emit('scoreUpdated');
+    emitter.emit('stateUpdated');
   };
 
   doc.getElementById('let').onclick = () => {
@@ -5835,7 +5841,7 @@ function isUndefined(arg) {
     if (game.length > 1) {
       const removedRally = game.pop();
       if (removedRally.get('player1') !== currentRally().get('player1') || removedRally.get('player2') !== currentRally().get('player2')) {
-        emitter.emit('scoreUpdated');
+        emitter.emit('stateUpdated');
       } else {
         showMessage('Decision undone', `(${removedRally.get('challenge')})`);
         removeMessage(1500);
@@ -5843,13 +5849,15 @@ function isUndefined(arg) {
     }
   };
 
-  emitter.on('scoreUpdated', () => {
-    const currentRally = game[game.length - 1];
-    const servingSide = currentRally.get('servingSide');
-    const servingPlayer = currentRally.get('servingPlayer');
+  doc.getElementById('serveLeft').onclick = switchSides;
+  doc.getElementById('serveRight').onclick = switchSides;
+
+  emitter.on('stateUpdated', () => {
+    const servingSide = currentRally().get('servingSide');
+    const servingPlayer = currentRally().get('servingPlayer');
     Array.prototype.slice.call(doc.getElementsByClassName('active')).forEach((el) => el.classList.remove('active'));
-    doc.getElementById('score1').innerHTML = currentRally.get('player1');
-    doc.getElementById('score2').innerHTML = currentRally.get('player2');
+    doc.getElementById('score1').innerHTML = currentRally().get('player1');
+    doc.getElementById('score2').innerHTML = currentRally().get('player2');
     doc.getElementById(servingSide === 'right' ? 'serveRight' : 'serveLeft').classList.add('active');
     doc.getElementById(servingPlayer === 'player1' ? 'player1' : 'player2').classList.add('active');
   });
