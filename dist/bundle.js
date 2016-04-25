@@ -5840,7 +5840,7 @@ function isUndefined(arg) {
   };
 
   doc.getElementById('undo').onclick = () => {
-    if (game.length > 1) {
+    if (game.length > 1 && (currentRally().get('challenge') || currentRally().get('player1') || currentRally().get('player2'))) {
       const removedRally = game.pop();
       if (removedRally.get('player1') !== currentRally().get('player1') || removedRally.get('player2') !== currentRally().get('player2')) {
         emitter.emit('stateUpdated');
