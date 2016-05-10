@@ -7,26 +7,29 @@
     margin-right: 1vw;
     text-align: center;
     font-size: 3vh;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;
     line-height: 15vh;
     border: 1px solid #ccc;
     border-radius: 0.8vw;
 }
+
 .small {
     height: 8vh;
-    line-height: 3.5vh;
-    font-size: 3vh;
-    text-decoration: none;
+    line-height: 3vh;
+    font-size: 3vh;   text-decoration: none;
 }
+
 .small.active {
     text-decoration: underline;
 }
+
 .large {
     height: 24vh;
     line-height: 24vh;
-    font-size: 22vh;
+    font-size: 21vh;
     margin-top: -4vh;
 }
+
 .service {
     width: 24vw;
     height: 24vw;
@@ -34,31 +37,36 @@
     border: 1px solid #ccc;
     margin: auto;
     margin-top: -2vh;
-    background-color: #fff;
+    background-color: #fff
 }
+
 .service.active {
     background-color: #030303;
 }
+
 .no-border {
     border: 1px solid #fff;
 }
+
 #message {
     height: 0;
     width: 0;
-    overflow: hidden;
+    overflow: hidden
 }
+
 #message.active {
     position: absolute;
     top: 8vh;
     left: 0;
     width: 100%;
     height: 38vh;
-    background-color: white;
+    background-color: #fff;
     text-align: center;
-    line-height: 17vh;
+    line-height: 18vh;
     font-size: 3vh;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
+
 #message.active strong {
     font-size: 6vh;
 }

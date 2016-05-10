@@ -1,3 +1,9 @@
+$grey: #ccc;
+$darkGrey: #030303;
+$white: #fff;
+$fontFamily: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+$smallFont: 3vh;
+
 .component {
     display: inline-block;
     width: 44vw;
@@ -6,59 +12,67 @@
     margin-left: 1vw;
     margin-right: 1vw;
     text-align: center;
-    font-size: 3vh;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: $smallFont;
+    font-family: $fontFamily;
     line-height: 15vh;
-    border: 1px solid #ccc;
+    border: 1px solid $grey;
     border-radius: 0.8vw;
 }
+
 .small {
     height: 8vh;
-    line-height: 3.5vh;
-    font-size: 3vh;
-    text-decoration: none;
+    line-height: $smallFont;
+    font-size: $smallFont;
+
+    &.active {
+        text-decoration: underline;
+    }   text-decoration: none;
 }
-.small.active {
-    text-decoration: underline;
-}
+
 .large {
-    height: 24vh;
-    line-height: 24vh;
-    font-size: 22vh;
+    height: calc($smallFont * 8);
+    line-height: calc($smallFont * 8);
+    font-size: calc($smallFont * 7);
     margin-top: -4vh;
 }
+
 .service {
     width: 24vw;
     height: 24vw;
     border-radius: 12vw;
-    border: 1px solid #ccc;
+    border: 1px solid $grey;
     margin: auto;
     margin-top: -2vh;
-    background-color: #fff;
+    background-color: $white;
+
+    &.active {
+        background-color: $darkGrey;
+    }
 }
-.service.active {
-    background-color: #030303;
-}
+
 .no-border {
-    border: 1px solid #fff;
+    border: 1px solid $white;
 }
+
 #message {
     height: 0;
     width: 0;
     overflow: hidden;
-}
-#message.active {
-    position: absolute;
-    top: 8vh;
-    left: 0;
-    width: 100%;
-    height: 38vh;
-    background-color: white;
-    text-align: center;
-    line-height: 17vh;
-    font-size: 3vh;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-#message.active strong {
-    font-size: 6vh;
+
+    &.active {
+        position: absolute;
+        top: 8vh;
+        left: 0;
+        width: 100%;
+        height: 38vh;
+        background-color: $white;
+        text-align: center;
+        line-height: calc($smallFont * 6);
+        font-size: $smallFont;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+        strong {
+            font-size: calc($smallFont * 2);
+        }
+    }
 }
