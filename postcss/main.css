@@ -4,9 +4,31 @@ $white: #fff;
 $fontFamily: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 $smallFont: 3vh;
 
+html {
+    overflow: hidden;
+}
+
+body {
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+#container {
+    width: 100vw;
+    padding: 2vw;
+    transform: translateX(0);
+    transition: 0.5s;
+    overflow: hidden;
+
+    &.pushedRight {
+        transform: translateX(100vw);
+    }
+}
+
 .component {
     display: inline-block;
-    width: 44vw;
+    width: 45vw;
     height: 15vh;
     margin-top: 0.6vh;
     margin-left: 1vw;
@@ -74,5 +96,21 @@ $smallFont: 3vh;
         strong {
             font-size: calc($smallFont * 2);
         }
+    }
+}
+
+#leftMenu {
+    background-color: #ccc;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translateX(-100vw);
+    transition: 0.5s;
+    overflow: hidden;
+
+    &.active {
+        transform: translateX(0);
     }
 }

@@ -3,7 +3,8 @@
   const emitter = new EventEmitter();
   const rally = require('./rally');
   const doc = window.document;
-  
+  const simpleSwipeEvents = require('simple-swipe-events');
+
   let game = [rally.rallyContainer];
   const currentRally = () => game[game.length -1];
   const showMessage = (messageTitle, messageDetail) => {
@@ -74,5 +75,23 @@
     doc.getElementById(servingSide === 'right' ? 'serveRight' : 'serveLeft').classList.add('active');
     doc.getElementById(servingPlayer === 'player1' ? 'player1' : 'player2').classList.add('active');
   });
+
+  const pushRight = () => {
+    document.getElementById('leftMenu').classList.add('active')
+    document.getElementById('container').classList.add('pushedRight')
+  }
+
+  const pushLeft = () => {
+    document.getElementById('leftMenu').classList.remove('active')
+    document.getElementById('container').classList.remove('pushedRight')
+  }
+
+  document.getElementById('container').addEventListener('swipe-right', () => {
+    pushRight();
+  }, true);
+
+  document.getElementById('leftMenu').addEventListener('swipe-left', () => {
+    pushLeft();
+  }, true);
 
 })();

@@ -1,6 +1,31 @@
+html {
+    overflow: hidden;
+}
+
+body {
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+#container {
+    width: 100vw;
+    padding: 2vw;
+    -webkit-transform: translateX(0);
+            transform: translateX(0);
+    -webkit-transition: 0.5s;
+    transition: 0.5s;
+    overflow: hidden
+}
+
+#container.pushedRight {
+    -webkit-transform: translateX(100vw);
+    transform: translateX(100vw);
+}
+
 .component {
     display: inline-block;
-    width: 44vw;
+    width: 45vw;
     height: 15vh;
     margin-top: 0.6vh;
     margin-left: 1vw;
@@ -69,4 +94,23 @@
 
 #message.active strong {
     font-size: 6vh;
+}
+
+#leftMenu {
+    background-color: #ccc;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    -webkit-transform: translateX(-100vw);
+            transform: translateX(-100vw);
+    -webkit-transition: 0.5s;
+    transition: 0.5s;
+    overflow: hidden
+}
+
+#leftMenu.active {
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
 }
