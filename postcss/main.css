@@ -3,6 +3,7 @@ $darkGrey: #030303;
 $white: #fff;
 $fontFamily: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 $smallFont: 3vh;
+$padding: 2vw;
 
 html {
     overflow: hidden;
@@ -12,11 +13,12 @@ body {
     margin: 0;
     position: relative;
     overflow: hidden;
+    font-family: $fontFamily;
 }
 
 #container {
     width: 100vw;
-    padding: 2vw;
+    padding: $padding;
     transform: translateX(0);
     transition: 0.5s;
     overflow: hidden;
@@ -35,7 +37,6 @@ body {
     margin-right: 1vw;
     text-align: center;
     font-size: $smallFont;
-    font-family: $fontFamily;
     line-height: 15vh;
     border: 1px solid $grey;
     border-radius: 0.8vw;
@@ -91,7 +92,6 @@ body {
         text-align: center;
         line-height: calc($smallFont * 6);
         font-size: $smallFont;
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
         strong {
             font-size: calc($smallFont * 2);
@@ -112,5 +112,25 @@ body {
 
     &.active {
         transform: translateX(0);
+    }
+
+    #optionsTitle {
+        padding: $padding;
+        font-size: calc($smallFont * 2);
+    }
+
+    .field {
+        font-size: $smallFont;
+        padding: $padding;
+
+        label {
+            display: block;
+            margin-bottom: $padding;
+        }
+
+        input {
+            padding: 1vw;
+            font-size: $smallFont;
+        }
     }
 }

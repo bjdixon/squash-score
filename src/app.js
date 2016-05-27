@@ -1,8 +1,23 @@
 (() => {
+
+  const doc = window.document;
+
+  const ColorPicker = require('simple-color-picker');
+  const player1ColorPicker = new ColorPicker({
+    color: '#0000FF',
+    el: doc.getElementById('player1color')
+  });
+
+  const player2ColorPicker = new ColorPicker({
+    color: '#FF0000',
+    el: doc.getElementById('player2color')
+  });
+
+  // UI Events
+
   const EventEmitter = require('events');
   const emitter = new EventEmitter();
   const rally = require('./rally');
-  const doc = window.document;
   const simpleSwipeEvents = require('simple-swipe-events');
 
   let game = [rally.rallyContainer];
