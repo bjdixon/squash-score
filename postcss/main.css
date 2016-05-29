@@ -116,6 +116,7 @@ body {
 
     #optionsTitle {
         padding: $padding;
+        padding-bottom: 0;
         font-size: calc($smallFont * 2);
     }
 
@@ -131,6 +132,20 @@ body {
         input {
             padding: 1vw;
             font-size: $smallFont;
+        }
+
+        .colorOutput {
+            float: right;
+            width: 45vw;
+            height: 40vw;
+
+            &#player1colorOutput {
+                background-color: #0000FF;
+            }
+
+            &#player2colorOutput {
+                background-color: #FF0000;
+            }
         }
     }
 }

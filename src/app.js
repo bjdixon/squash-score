@@ -5,12 +5,20 @@
   const ColorPicker = require('simple-color-picker');
   const player1ColorPicker = new ColorPicker({
     color: '#0000FF',
-    el: doc.getElementById('player1color')
+    el: doc.getElementById('player1color'),
+    widthUnits: 'vw',
+    width: 50,
+    heightUnits: 'vw',
+    height: 40
   });
 
   const player2ColorPicker = new ColorPicker({
     color: '#FF0000',
-    el: doc.getElementById('player2color')
+    el: doc.getElementById('player2color'),
+    widthUnits: 'vw',
+    width: 50,
+    heightUnits: 'vw',
+    height: 40
   });
 
   // UI Events

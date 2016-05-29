@@ -111,6 +111,7 @@ body {
 
 #leftMenu #optionsTitle {
     padding: 2vw;
+    padding-bottom: 0;
     font-size: 6vh;
 }
 
@@ -127,6 +128,20 @@ body {
 #leftMenu .field input {
     padding: 1vw;
     font-size: 3vh;
+}
+
+#leftMenu .field .colorOutput {
+    float: right;
+    width: 45vw;
+    height: 40vw
+}
+
+#leftMenu .field .colorOutput#player1colorOutput {
+    background-color: #0000FF;
+}
+
+#leftMenu .field .colorOutput#player2colorOutput {
+    background-color: #FF0000;
 }
 
 #leftMenu.active {
