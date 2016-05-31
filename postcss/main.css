@@ -134,6 +134,10 @@ body {
             font-size: $smallFont;
         }
 
+        .colorPicker {
+            height: 40vw;
+        }
+
         .colorOutput {
             float: right;
             width: 45vw;

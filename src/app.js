@@ -1,8 +1,14 @@
 (() => {
 
   const doc = window.document;
-
   const ColorPicker = require('simple-color-picker');
+  const rally = require('./rally');
+  const EventEmitter = require('events');
+  const emitter = new EventEmitter();
+  const simpleSwipeEvents = require('simple-swipe-events');
+
+  // init and helpers
+
   const player1ColorPicker = new ColorPicker({
     color: '#0000FF',
     el: doc.getElementById('player1color'),
@@ -21,22 +27,19 @@
     height: 40
   });
 
-  // UI Events
-
-  const EventEmitter = require('events');
-  const emitter = new EventEmitter();
-  const rally = require('./rally');
-  const simpleSwipeEvents = require('simple-swipe-events');
-
   let game = [rally.rallyContainer];
+
   const currentRally = () => game[game.length -1];
+
   const showMessage = (messageTitle, messageDetail) => {
-    document.getElementById('message').innerHTML = `<strong>${messageTitle}</strong><br>${messageDetail || ''}`;
-    document.getElementById('message').classList.add('active');
+    doc.getElementById('message').innerHTML = `<strong>${messageTitle}</strong><br>${messageDetail || ''}`;
+    doc.getElementById('message').classList.add('active');
   };
+
   const removeMessage = (time) => {
-    setTimeout(() => document.getElementById('message').classList.remove('active'), time);
+    setTimeout(() => doc.getElementById('message').classList.remove('active'), time);
   };
+
   const changeDefaults = function (fn) {
     return function () {
       if (!this.classList.contains('active')) {
@@ -45,6 +48,8 @@
       }
     };
   };
+
+  // UI Events
 
   doc.getElementById('handOut').onclick = () => {
     game.push(rally.handOut(currentRally()));
@@ -85,8 +90,11 @@
   };
 
   doc.getElementById('serveLeft').onclick = changeDefaults(rally.switchServingSide);
+
   doc.getElementById('serveRight').onclick = changeDefaults(rally.switchServingSide);
+
   doc.getElementById('player1').onclick = changeDefaults(rally.changeServer);
+
   doc.getElementById('player2').onclick = changeDefaults(rally.changeServer);
 
   emitter.on('stateUpdated', () => {
@@ -100,21 +108,37 @@
   });
 
   const pushRight = () => {
-    document.getElementById('leftMenu').classList.add('active')
-    document.getElementById('container').classList.add('pushedRight')
+    doc.getElementById('leftMenu').classList.add('active')
+    doc.getElementById('container').classList.add('pushedRight')
   }
 
   const pushLeft = () => {
-    document.getElementById('leftMenu').classList.remove('active')
-    document.getElementById('container').classList.remove('pushedRight')
+    doc.getElementById('leftMenu').classList.remove('active')
+    doc.getElementById('container').classList.remove('pushedRight')
   }
 
-  document.getElementById('container').addEventListener('swipe-right', () => {
+  doc.getElementById('container').addEventListener('swipe-right', () => {
     pushRight();
   }, true);
 
-  document.getElementById('leftMenu').addEventListener('swipe-left', () => {
+  doc.getElementById('leftMenu').addEventListener('swipe-left', () => {
     pushLeft();
   }, true);
+
+  doc.getElementById('player1name').addEventListener('input', (e) => {
+    doc.getElementById('player1').innerHTML = e.target.value;
+  });
+
+  doc.getElementById('player2name').addEventListener('input', (e) => {
+    doc.getElementById('player2').innerHTML = e.target.value;
+  });
+
+  player1ColorPicker.on('update', (color) => {
+    doc.getElementById('player1colorOutput').style.backgroundColor = color;
+  });
+
+  player2ColorPicker.on('update', (color) => {
+    doc.getElementById('player2colorOutput').style.backgroundColor = color;
+  });
 
 })();

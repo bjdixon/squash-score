@@ -1,373 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-'use strict';
-
-var bindAll = require('lodash.bindall');
-var Emitter = require('component-emitter');
-var isNumber = require('is-number');
-var tinycolor = require('tinycolor2');
-var transform = require('dom-transform');
-var clamp = require('./src/utils/maths/clamp');
-
-/**
- * Creates a new Colorpicker
- * @param {Object} options
- * @param {String|Number|Object} options.color The default color that the colorpicker will display. Default is #FFFFFF. It can be a hexadecimal number or an hex String.
- * @param {String|Number|Object} options.background The background color of the colorpicker. Default is transparent. It can be a hexadecimal number or an hex String.
- * @param {DomElement} options.el A dom node to add the colorpicker to. You can also use `colorPicker.appendTo(domNode)` afterwards if you prefer.
- * @param {Number} options.width Desired width of the color picker. Default is 175.
- * @param {Number} options.height Desired height of the color picker. Default is 150.
- */
-function SimpleColorPicker(options) {
-  // options
-  options = options || {};
-
-  // properties
-  this.color = null;
-  this.width = 0;
-  this.widthUnits = 'px';
-  this.height = 0;
-  this.heightUnits = 'px';
-  this.hue = 0;
-  this.choosing = false;
-  this.position = {x: 0, y: 0};
-  this.huePosition = 0;
-  this.saturationWidth = 0;
-  this.maxHue = 0;
-  this.inputIsNumber = false;
-
-  // bind methods to scope (only if needed)
-  bindAll(this, '_onSaturationMouseMove', '_onSaturationMouseDown', '_onSaturationMouseUp', '_onHueMouseDown', '_onHueMouseUp', '_onHueMouseMove');
-
-  // create dom
-  this.$el = document.createElement('div');
-  this.$el.className = 'Scp';
-  this.$el.innerHTML = [
-    '<div class="Scp-saturation">',
-      '<div class="Scp-brightness"></div>',
-      '<div class="Scp-sbSelector"></div>',
-    '</div>',
-    '<div class="Scp-hue">',
-      '<div class="Scp-hSelector"></div>',
-    '</div>'
-  ].join('\n');
-
-  // dom accessors
-  this.$saturation = this.$el.querySelector('.Scp-saturation');
-  this.$hue = this.$el.querySelector('.Scp-hue');
-  this.$sbSelector = this.$el.querySelector('.Scp-sbSelector');
-  this.$hSelector = this.$el.querySelector('.Scp-hSelector');
-
-  // event listeners
-  this.$saturation.addEventListener('mousedown', this._onSaturationMouseDown);
-  this.$saturation.addEventListener('touchstart', this._onSaturationMouseDown);
-  this.$hue.addEventListener('mousedown', this._onHueMouseDown);
-  this.$hue.addEventListener('touchstart', this._onHueMouseDown);
-
-  // some styling and DOMing from options
-  if (options.el) {
-    this.appendTo(options.el);
-  }
-  if (options.background) {
-    this.setBackgroundColor(options.background);
-  }
-  if (options.widthUnits) {
-    this.widthUnits = options.widthUnits;
-  }
-  if (options.heightUnits) {
-    this.heightUnits = options.heightUnits;
-  }
-  this.setSize(options.width || 175, options.height || 150);
-  this.setColor(options.color);
-
-  return this;
-}
-
-Emitter(SimpleColorPicker.prototype);
-
-/* =============================================================================
-  Public API
-============================================================================= */
-/**
- * Add the colorPicker instance to a domElement.
- * @param  {domElement} domElement
- * @return {colorPicker} returns itself for chaining purpose
- */
-SimpleColorPicker.prototype.appendTo = function(domElement) {
-  domElement.appendChild(this.$el);
-  return this;
-};
-
-/**
- * Removes colorpicker from is parent and kill all listeners.
- * Call this method for proper destroy.
- */
-SimpleColorPicker.prototype.remove = function() {
-  this.$saturation.removeEventListener('mousedown', this._onSaturationMouseDown);
-  this.$saturation.removeEventListener('touchstart', this._onSaturationMouseDown);
-  this.$hue.removeEventListener('mousedown', this._onHueMouseDown);
-  this.$hue.removeEventListener('touchstart', this._onHueMouseDown);
-  this._onSaturationMouseUp();
-  this._onHueMouseUp();
-  this.off();
-  if (this.$el.parentNode) {
-    this.$el.parentNode.removeChild(this.$el);
-  }
-};
-
-/**
- * Manually set the current color of the colorpicker. This is the method
- * used on instantiation to convert `color` option to actual color for
- * the colorpicker. Param can be a hexadecimal number or an hex String.
- * @param {String|Number} color hex color desired
- */
-SimpleColorPicker.prototype.setColor = function(color) {
-  if(isNumber(color)) {
-    this.inputIsNumber = true;
-    color = '#' + ('00000' + (color | 0).toString(16)).substr(-6);
-  }
-  else {
-    this.inputIsNumber = false;
-  }
-  this.color = tinycolor(color);
-
-  var hsvColor = this.color.toHsv();
-
-  if(!isNaN(hsvColor.h)) {
-    this.hue = hsvColor.h;
-  }
-
-  this._moveSelectorTo(this.saturationWidth * hsvColor.s, (1 - hsvColor.v) * this.height);
-  this._moveHueTo((1 - (this.hue / 360)) * this.height);
-
-  this._updateHue();
-  return this;
-};
-
-/**
- * Set size of the color picker for a given width and height. Note that
- * a padding of 5px will be added if you chose to use the background option
- * of the constructor.
- * @param {Number} width
- * @param {Number} height
- */
-SimpleColorPicker.prototype.setSize = function(width, height) {
-  this.width = width;
-  this.height = height;
-  this.$el.style.width = this.width + this.widthUnits;
-  this.$el.style.height = this.height + this.heightUnits;
-  this.saturationWidth = this.width - 25;
-  this.maxHue = this.height - 2;
-  return this;
-};
-
-/**
- * Set the background color of the colorpicker. It also adds a 5px padding
- * for design purpose.
- * @param {String|Number} color hex color desired for background
- */
-SimpleColorPicker.prototype.setBackgroundColor = function(color) {
-  if(isNumber(color)) {
-    color = '#' + ('00000' + (color | 0).toString(16)).substr(-6);
-  }
-  this.$el.style.padding = '5px';
-  this.$el.style.background = tinycolor(color).toHexString();
-};
-
-/**
- * Removes background of the colorpicker if previously set. It's no use
- * calling this method if you didn't set the background option on start
- * or if you didn't call setBackgroundColor previously.
- */
-SimpleColorPicker.prototype.setNoBackground = function() {
-  this.$el.style.padding = '0px';
-  this.$el.style.background = 'none';
-};
-
-/**
- * Registers callback to the update event of the colorpicker.
- * ColorPicker inherits from [component/emitter](https://github.com/component/emitter)
- * so you could do the same thing by calling `colorPicker.on('update');`
- * @param  {Function} callback
- * @return {colorPicker} returns itself for chaining purpose
- */
-SimpleColorPicker.prototype.onChange = function(callback) {
-  this.on('update', callback);
-  this.emit('update', this.getHexString());
-  return this;
-};
-
-/* =============================================================================
-  Color getters
-============================================================================= */
-/**
- * Main color getter, will return a formatted color string depending on input
- * or a number depending on the last setColor call.
- * @return {Number|String}
- */
-SimpleColorPicker.prototype.getColor = function() {
-  if(this.inputIsNumber) {
-    return this.getHexNumber();
-  }
-  return this.color.toString();
-};
-
-/**
- * Returns color as css hex string (ex: '#FF0000').
- * @return {String}
- */
-SimpleColorPicker.prototype.getHexString = function() {
-  return this.color.toHexString().toUpperCase();
-};
-
-/**
- * Returns color as number (ex: 0xFF0000).
- * @return {Number}
- */
-SimpleColorPicker.prototype.getHexNumber = function() {
-  return parseInt(this.color.toHex(), 16);
-};
-
-/**
- * Returns color as {r: 255, g: 0, b: 0} object.
- * @return {Object}
- */
-SimpleColorPicker.prototype.getRGB = function() {
-  return this.color.toRgb();
-};
-
-/**
- * Returns color as {h: 100, s: 1, v: 1} object.
- * @return {Object}
- */
-SimpleColorPicker.prototype.getHSV = function() {
-  return this.color.toHsv();
-};
-
-/**
- * Returns true if color is perceived as dark
- * @return {Boolean}
- */
-SimpleColorPicker.prototype.isDark = function() {
-  return this.color.isDark();
-};
-
-/**
- * Returns true if color is perceived as light
- * @return {Boolean}
- */
-SimpleColorPicker.prototype.isLight = function() {
-  return this.color.isLight();
-};
-
-/* =============================================================================
-  "Private" Methods LOL silly javascript
-============================================================================= */
-SimpleColorPicker.prototype._moveSelectorTo = function(x, y) {
-  this.position.x = clamp(x, 0, this.saturationWidth);
-  this.position.y = clamp(y, 0, this.height);
-
-  transform(this.$sbSelector, {
-    x: this.position.x,
-    y: this.position.y
-  });
-};
-
-SimpleColorPicker.prototype._updateColorFromPosition = function() {
-  this.color = tinycolor({h: this.hue, s: this.position.x / this.saturationWidth, v: 1 - (this.position.y / this.height)});
-  this._updateColor();
-};
-
-SimpleColorPicker.prototype._moveHueTo = function(y) {
-  this.huePosition = clamp(y, 0, this.maxHue);
-
-  transform(this.$hSelector, {
-    y: this.huePosition
-  });
-};
-
-SimpleColorPicker.prototype._updateHueFromPosition = function() {
-  var hsvColor = this.color.toHsv();
-  this.hue = 360 * (1 - (this.huePosition / this.maxHue));
-  this.color = tinycolor({h: this.hue, s: hsvColor.s, v: hsvColor.v});
-  this._updateHue();
-};
-
-SimpleColorPicker.prototype._updateHue = function() {
-  var hueColor = tinycolor({h: this.hue, s: 1, v: 1});
-  this.$saturation.style.background = 'linear-gradient(to right, #fff, ' + hueColor.toHexString() + ')';
-  this._updateColor();
-};
-
-SimpleColorPicker.prototype._updateColor = function() {
-  this.$sbSelector.style.background = this.color.toHexString();
-  this.$sbSelector.style.borderColor = this.color.isDark() ? '#fff' : '#000';
-  this.emit('update', this.color.toHexString());
-};
-
-/* =============================================================================
-  Events handlers
-============================================================================= */
-SimpleColorPicker.prototype._onSaturationMouseDown = function(e) {
-  this.choosing = true;
-  var sbOffset = this.$saturation.getBoundingClientRect();
-  var xPos = (e.type.indexOf('touch') === 0) ? e.touches[0].clientX : e.clientX;
-  var yPos = (e.type.indexOf('touch') === 0) ? e.touches[0].clientY : e.clientY;
-  this._moveSelectorTo(xPos - sbOffset.left, yPos - sbOffset.top);
-  this._updateColorFromPosition();
-  window.addEventListener('mouseup', this._onSaturationMouseUp);
-  window.addEventListener('touchend', this._onSaturationMouseUp);
-  window.addEventListener('mousemove', this._onSaturationMouseMove);
-  window.addEventListener('touchmove', this._onSaturationMouseMove);
-  e.preventDefault();
-};
-
-SimpleColorPicker.prototype._onSaturationMouseMove = function(e) {
-  var sbOffset = this.$saturation.getBoundingClientRect();
-  var xPos = (e.type.indexOf('touch') === 0) ? e.touches[0].clientX : e.clientX;
-  var yPos = (e.type.indexOf('touch') === 0) ? e.touches[0].clientY : e.clientY;
-  this._moveSelectorTo(xPos - sbOffset.left, yPos - sbOffset.top);
-  this._updateColorFromPosition();
-};
-
-SimpleColorPicker.prototype._onSaturationMouseUp = function() {
-  this.choosing = false;
-  window.removeEventListener('mouseup', this._onSaturationMouseUp);
-  window.removeEventListener('touchend', this._onSaturationMouseUp);
-  window.removeEventListener('mousemove', this._onSaturationMouseMove);
-  window.removeEventListener('touchmove', this._onSaturationMouseMove);
-};
-
-SimpleColorPicker.prototype._onHueMouseDown = function(e) {
-  this.choosing = true;
-  var hOffset = this.$hue.getBoundingClientRect();
-  var yPos = (e.type.indexOf('touch') === 0) ? e.touches[0].clientY : e.clientY;
-  this._moveHueTo(yPos - hOffset.top);
-  this._updateHueFromPosition();
-  window.addEventListener('mouseup', this._onHueMouseUp);
-  window.addEventListener('touchend', this._onHueMouseUp);
-  window.addEventListener('mousemove', this._onHueMouseMove);
-  window.addEventListener('touchmove', this._onHueMouseMove);
-  e.preventDefault();
-};
-
-SimpleColorPicker.prototype._onHueMouseMove = function(e) {
-  var hOffset = this.$hue.getBoundingClientRect();
-  var yPos = (e.type.indexOf('touch') === 0) ? e.touches[0].clientY : e.clientY;
-  this._moveHueTo(yPos - hOffset.top);
-  this._updateHueFromPosition();
-};
-
-SimpleColorPicker.prototype._onHueMouseUp = function() {
-  this.choosing = false;
-  window.removeEventListener('mouseup', this._onHueMouseUp);
-  window.removeEventListener('touchend', this._onHueMouseUp);
-  window.removeEventListener('mousemove', this._onHueMouseMove);
-  window.removeEventListener('touchmove', this._onHueMouseMove);
-};
-
-module.exports = SimpleColorPicker;
-
-},{"./src/utils/maths/clamp":18,"component-emitter":2,"dom-transform":3,"is-number":8,"lodash.bindall":13,"tinycolor2":16}],2:[function(require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -532,7 +163,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 'use strict';
 
 var prefix = require('prefix');
@@ -671,7 +302,7 @@ function getPropertiesName() {
   });
 }
 
-},{"./lib/default-unit":4,"./lib/properties":5,"is-array":6,"prefix":15}],4:[function(require,module,exports){
+},{"./lib/default-unit":3,"./lib/properties":4,"is-array":5,"prefix":9}],3:[function(require,module,exports){
 'use strict';
 
 var trim = require('trim');
@@ -701,7 +332,7 @@ module.exports = function(value, unit, separator) {
   }).join(separator);
 };
 
-},{"trim":17}],5:[function(require,module,exports){
+},{"trim":11}],4:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -735,7 +366,7 @@ module.exports = {
   }
 };
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 
 /**
  * isArray
@@ -770,7 +401,7 @@ module.exports = isArray || function (val) {
   return !! val && '[object Array]' == str.call(val);
 };
 
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /**
  * Determine if an object is Buffer
  *
@@ -789,7 +420,7 @@ module.exports = function (obj) {
     ))
 }
 
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*!
  * is-number <https://github.com/jonschlinkert/is-number>
  *
@@ -810,7 +441,7 @@ module.exports = function isNumber(num) {
   return (n - n + 1) >= 0 && num !== '';
 };
 
-},{"kind-of":9}],9:[function(require,module,exports){
+},{"kind-of":8}],8:[function(require,module,exports){
 (function (Buffer){
 var isBuffer = require('is-buffer');
 var toString = Object.prototype.toString;
@@ -927,1848 +558,14 @@ module.exports = function kindOf(val) {
 };
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":20,"is-buffer":7}],10:[function(require,module,exports){
-/**
- * lodash (Custom Build) <https://lodash.com/>
- * Build: `lodash modularize exports="npm" -o ./`
- * Copyright jQuery Foundation and other contributors <https://jquery.org/>
- * Released under MIT license <https://lodash.com/license>
- * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
- * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- */
-
-/** Used as references for various `Number` constants. */
-var MAX_SAFE_INTEGER = 9007199254740991;
-
-/** `Object#toString` result references. */
-var argsTag = '[object Arguments]',
-    funcTag = '[object Function]',
-    genTag = '[object GeneratorFunction]';
-
-/**
- * Appends the elements of `values` to `array`.
- *
- * @private
- * @param {Array} array The array to modify.
- * @param {Array} values The values to append.
- * @returns {Array} Returns `array`.
- */
-function arrayPush(array, values) {
-  var index = -1,
-      length = values.length,
-      offset = array.length;
-
-  while (++index < length) {
-    array[offset + index] = values[index];
-  }
-  return array;
-}
-
-/** Used for built-in method references. */
-var objectProto = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objectToString = objectProto.toString;
-
-/** Built-in value references. */
-var propertyIsEnumerable = objectProto.propertyIsEnumerable;
-
-/**
- * The base implementation of `_.flatten` with support for restricting flattening.
- *
- * @private
- * @param {Array} array The array to flatten.
- * @param {number} depth The maximum recursion depth.
- * @param {boolean} [predicate=isFlattenable] The function invoked per iteration.
- * @param {boolean} [isStrict] Restrict to values that pass `predicate` checks.
- * @param {Array} [result=[]] The initial result value.
- * @returns {Array} Returns the new flattened array.
- */
-function baseFlatten(array, depth, predicate, isStrict, result) {
-  var index = -1,
-      length = array.length;
-
-  predicate || (predicate = isFlattenable);
-  result || (result = []);
-
-  while (++index < length) {
-    var value = array[index];
-    if (depth > 0 && predicate(value)) {
-      if (depth > 1) {
-        // Recursively flatten arrays (susceptible to call stack limits).
-        baseFlatten(value, depth - 1, predicate, isStrict, result);
-      } else {
-        arrayPush(result, value);
-      }
-    } else if (!isStrict) {
-      result[result.length] = value;
-    }
-  }
-  return result;
-}
-
-/**
- * The base implementation of `_.property` without support for deep paths.
- *
- * @private
- * @param {string} key The key of the property to get.
- * @returns {Function} Returns the new accessor function.
- */
-function baseProperty(key) {
-  return function(object) {
-    return object == null ? undefined : object[key];
-  };
-}
-
-/**
- * Gets the "length" property value of `object`.
- *
- * **Note:** This function is used to avoid a
- * [JIT bug](https://bugs.webkit.org/show_bug.cgi?id=142792) that affects
- * Safari on at least iOS 8.1-8.3 ARM64.
- *
- * @private
- * @param {Object} object The object to query.
- * @returns {*} Returns the "length" value.
- */
-var getLength = baseProperty('length');
-
-/**
- * Checks if `value` is a flattenable `arguments` object or array.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is flattenable, else `false`.
- */
-function isFlattenable(value) {
-  return isArray(value) || isArguments(value);
-}
-
-/**
- * Checks if `value` is likely an `arguments` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is correctly classified,
- *  else `false`.
- * @example
- *
- * _.isArguments(function() { return arguments; }());
- * // => true
- *
- * _.isArguments([1, 2, 3]);
- * // => false
- */
-function isArguments(value) {
-  // Safari 8.1 incorrectly makes `arguments.callee` enumerable in strict mode.
-  return isArrayLikeObject(value) && hasOwnProperty.call(value, 'callee') &&
-    (!propertyIsEnumerable.call(value, 'callee') || objectToString.call(value) == argsTag);
-}
-
-/**
- * Checks if `value` is classified as an `Array` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @type {Function}
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is correctly classified,
- *  else `false`.
- * @example
- *
- * _.isArray([1, 2, 3]);
- * // => true
- *
- * _.isArray(document.body.children);
- * // => false
- *
- * _.isArray('abc');
- * // => false
- *
- * _.isArray(_.noop);
- * // => false
- */
-var isArray = Array.isArray;
-
-/**
- * Checks if `value` is array-like. A value is considered array-like if it's
- * not a function and has a `value.length` that's an integer greater than or
- * equal to `0` and less than or equal to `Number.MAX_SAFE_INTEGER`.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
- * @example
- *
- * _.isArrayLike([1, 2, 3]);
- * // => true
- *
- * _.isArrayLike(document.body.children);
- * // => true
- *
- * _.isArrayLike('abc');
- * // => true
- *
- * _.isArrayLike(_.noop);
- * // => false
- */
-function isArrayLike(value) {
-  return value != null && isLength(getLength(value)) && !isFunction(value);
-}
-
-/**
- * This method is like `_.isArrayLike` except that it also checks if `value`
- * is an object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an array-like object,
- *  else `false`.
- * @example
- *
- * _.isArrayLikeObject([1, 2, 3]);
- * // => true
- *
- * _.isArrayLikeObject(document.body.children);
- * // => true
- *
- * _.isArrayLikeObject('abc');
- * // => false
- *
- * _.isArrayLikeObject(_.noop);
- * // => false
- */
-function isArrayLikeObject(value) {
-  return isObjectLike(value) && isArrayLike(value);
-}
-
-/**
- * Checks if `value` is classified as a `Function` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is correctly classified,
- *  else `false`.
- * @example
- *
- * _.isFunction(_);
- * // => true
- *
- * _.isFunction(/abc/);
- * // => false
- */
-function isFunction(value) {
-  // The use of `Object#toString` avoids issues with the `typeof` operator
-  // in Safari 8 which returns 'object' for typed array and weak map constructors,
-  // and PhantomJS 1.9 which returns 'function' for `NodeList` instances.
-  var tag = isObject(value) ? objectToString.call(value) : '';
-  return tag == funcTag || tag == genTag;
-}
-
-/**
- * Checks if `value` is a valid array-like length.
- *
- * **Note:** This function is loosely based on
- * [`ToLength`](http://ecma-international.org/ecma-262/6.0/#sec-tolength).
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a valid length,
- *  else `false`.
- * @example
- *
- * _.isLength(3);
- * // => true
- *
- * _.isLength(Number.MIN_VALUE);
- * // => false
- *
- * _.isLength(Infinity);
- * // => false
- *
- * _.isLength('3');
- * // => false
- */
-function isLength(value) {
-  return typeof value == 'number' &&
-    value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
-}
-
-/**
- * Checks if `value` is the
- * [language type](http://www.ecma-international.org/ecma-262/6.0/#sec-ecmascript-language-types)
- * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(_.noop);
- * // => true
- *
- * _.isObject(null);
- * // => false
- */
-function isObject(value) {
-  var type = typeof value;
-  return !!value && (type == 'object' || type == 'function');
-}
-
-/**
- * Checks if `value` is object-like. A value is object-like if it's not `null`
- * and has a `typeof` result of "object".
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
- * @example
- *
- * _.isObjectLike({});
- * // => true
- *
- * _.isObjectLike([1, 2, 3]);
- * // => true
- *
- * _.isObjectLike(_.noop);
- * // => false
- *
- * _.isObjectLike(null);
- * // => false
- */
-function isObjectLike(value) {
-  return !!value && typeof value == 'object';
-}
-
-module.exports = baseFlatten;
-
-},{}],11:[function(require,module,exports){
-(function (global){
-/**
- * lodash (Custom Build) <https://lodash.com/>
- * Build: `lodash modularize exports="npm" -o ./`
- * Copyright jQuery Foundation and other contributors <https://jquery.org/>
- * Released under MIT license <https://lodash.com/license>
- * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
- * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- */
-
-/** Used as the `TypeError` message for "Functions" methods. */
-var FUNC_ERROR_TEXT = 'Expected a function';
-
-/** Used as the internal argument placeholder. */
-var PLACEHOLDER = '__lodash_placeholder__';
-
-/** Used to compose bitmasks for wrapper metadata. */
-var BIND_FLAG = 1,
-    BIND_KEY_FLAG = 2,
-    CURRY_BOUND_FLAG = 4,
-    CURRY_FLAG = 8,
-    CURRY_RIGHT_FLAG = 16,
-    PARTIAL_FLAG = 32,
-    PARTIAL_RIGHT_FLAG = 64,
-    ARY_FLAG = 128,
-    FLIP_FLAG = 512;
-
-/** Used as references for various `Number` constants. */
-var INFINITY = 1 / 0,
-    MAX_SAFE_INTEGER = 9007199254740991,
-    MAX_INTEGER = 1.7976931348623157e+308,
-    NAN = 0 / 0;
-
-/** `Object#toString` result references. */
-var funcTag = '[object Function]',
-    genTag = '[object GeneratorFunction]',
-    symbolTag = '[object Symbol]';
-
-/** Used to match leading and trailing whitespace. */
-var reTrim = /^\s+|\s+$/g;
-
-/** Used to detect bad signed hexadecimal string values. */
-var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
-
-/** Used to detect binary string values. */
-var reIsBinary = /^0b[01]+$/i;
-
-/** Used to detect octal string values. */
-var reIsOctal = /^0o[0-7]+$/i;
-
-/** Used to detect unsigned integer values. */
-var reIsUint = /^(?:0|[1-9]\d*)$/;
-
-/** Used to determine if values are of the language type `Object`. */
-var objectTypes = {
-  'function': true,
-  'object': true
-};
-
-/** Built-in method references without a dependency on `root`. */
-var freeParseInt = parseInt;
-
-/** Detect free variable `exports`. */
-var freeExports = (objectTypes[typeof exports] && exports && !exports.nodeType)
-  ? exports
-  : undefined;
-
-/** Detect free variable `module`. */
-var freeModule = (objectTypes[typeof module] && module && !module.nodeType)
-  ? module
-  : undefined;
-
-/** Detect free variable `global` from Node.js. */
-var freeGlobal = checkGlobal(freeExports && freeModule && typeof global == 'object' && global);
-
-/** Detect free variable `self`. */
-var freeSelf = checkGlobal(objectTypes[typeof self] && self);
-
-/** Detect free variable `window`. */
-var freeWindow = checkGlobal(objectTypes[typeof window] && window);
-
-/** Detect `this` as the global object. */
-var thisGlobal = checkGlobal(objectTypes[typeof this] && this);
-
-/**
- * Used as a reference to the global object.
- *
- * The `this` value is used if it's the global object to avoid Greasemonkey's
- * restricted `window` object, otherwise the `window` object is used.
- */
-var root = freeGlobal ||
-  ((freeWindow !== (thisGlobal && thisGlobal.window)) && freeWindow) ||
-    freeSelf || thisGlobal || Function('return this')();
-
-/**
- * A faster alternative to `Function#apply`, this function invokes `func`
- * with the `this` binding of `thisArg` and the arguments of `args`.
- *
- * @private
- * @param {Function} func The function to invoke.
- * @param {*} thisArg The `this` binding of `func`.
- * @param {Array} args The arguments to invoke `func` with.
- * @returns {*} Returns the result of `func`.
- */
-function apply(func, thisArg, args) {
-  var length = args.length;
-  switch (length) {
-    case 0: return func.call(thisArg);
-    case 1: return func.call(thisArg, args[0]);
-    case 2: return func.call(thisArg, args[0], args[1]);
-    case 3: return func.call(thisArg, args[0], args[1], args[2]);
-  }
-  return func.apply(thisArg, args);
-}
-
-/**
- * Checks if `value` is a global object.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {null|Object} Returns `value` if it's a global object, else `null`.
- */
-function checkGlobal(value) {
-  return (value && value.Object === Object) ? value : null;
-}
-
-/**
- * Gets the number of `placeholder` occurrences in `array`.
- *
- * @private
- * @param {Array} array The array to inspect.
- * @param {*} placeholder The placeholder to search for.
- * @returns {number} Returns the placeholder count.
- */
-function countHolders(array, placeholder) {
-  var length = array.length,
-      result = 0;
-
-  while (length--) {
-    if (array[length] === placeholder) {
-      result++;
-    }
-  }
-  return result;
-}
-
-/**
- * Replaces all `placeholder` elements in `array` with an internal placeholder
- * and returns an array of their indexes.
- *
- * @private
- * @param {Array} array The array to modify.
- * @param {*} placeholder The placeholder to replace.
- * @returns {Array} Returns the new array of placeholder indexes.
- */
-function replaceHolders(array, placeholder) {
-  var index = -1,
-      length = array.length,
-      resIndex = 0,
-      result = [];
-
-  while (++index < length) {
-    var value = array[index];
-    if (value === placeholder || value === PLACEHOLDER) {
-      array[index] = PLACEHOLDER;
-      result[resIndex++] = index;
-    }
-  }
-  return result;
-}
-
-/** Used for built-in method references. */
-var objectProto = Object.prototype;
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objectToString = objectProto.toString;
-
-/** Built-in value references. */
-var objectCreate = Object.create;
-
-/* Built-in method references for those with the same name as other `lodash` methods. */
-var nativeMax = Math.max,
-    nativeMin = Math.min;
-
-/**
- * The base implementation of `_.create` without support for assigning
- * properties to the created object.
- *
- * @private
- * @param {Object} prototype The object to inherit from.
- * @returns {Object} Returns the new object.
- */
-function baseCreate(proto) {
-  return isObject(proto) ? objectCreate(proto) : {};
-}
-
-/**
- * Creates an array that is the composition of partially applied arguments,
- * placeholders, and provided arguments into a single array of arguments.
- *
- * @private
- * @param {Array} args The provided arguments.
- * @param {Array} partials The arguments to prepend to those provided.
- * @param {Array} holders The `partials` placeholder indexes.
- * @params {boolean} [isCurried] Specify composing for a curried function.
- * @returns {Array} Returns the new array of composed arguments.
- */
-function composeArgs(args, partials, holders, isCurried) {
-  var argsIndex = -1,
-      argsLength = args.length,
-      holdersLength = holders.length,
-      leftIndex = -1,
-      leftLength = partials.length,
-      rangeLength = nativeMax(argsLength - holdersLength, 0),
-      result = Array(leftLength + rangeLength),
-      isUncurried = !isCurried;
-
-  while (++leftIndex < leftLength) {
-    result[leftIndex] = partials[leftIndex];
-  }
-  while (++argsIndex < holdersLength) {
-    if (isUncurried || argsIndex < argsLength) {
-      result[holders[argsIndex]] = args[argsIndex];
-    }
-  }
-  while (rangeLength--) {
-    result[leftIndex++] = args[argsIndex++];
-  }
-  return result;
-}
-
-/**
- * This function is like `composeArgs` except that the arguments composition
- * is tailored for `_.partialRight`.
- *
- * @private
- * @param {Array} args The provided arguments.
- * @param {Array} partials The arguments to append to those provided.
- * @param {Array} holders The `partials` placeholder indexes.
- * @params {boolean} [isCurried] Specify composing for a curried function.
- * @returns {Array} Returns the new array of composed arguments.
- */
-function composeArgsRight(args, partials, holders, isCurried) {
-  var argsIndex = -1,
-      argsLength = args.length,
-      holdersIndex = -1,
-      holdersLength = holders.length,
-      rightIndex = -1,
-      rightLength = partials.length,
-      rangeLength = nativeMax(argsLength - holdersLength, 0),
-      result = Array(rangeLength + rightLength),
-      isUncurried = !isCurried;
-
-  while (++argsIndex < rangeLength) {
-    result[argsIndex] = args[argsIndex];
-  }
-  var offset = argsIndex;
-  while (++rightIndex < rightLength) {
-    result[offset + rightIndex] = partials[rightIndex];
-  }
-  while (++holdersIndex < holdersLength) {
-    if (isUncurried || argsIndex < argsLength) {
-      result[offset + holders[holdersIndex]] = args[argsIndex++];
-    }
-  }
-  return result;
-}
-
-/**
- * Copies the values of `source` to `array`.
- *
- * @private
- * @param {Array} source The array to copy values from.
- * @param {Array} [array=[]] The array to copy values to.
- * @returns {Array} Returns `array`.
- */
-function copyArray(source, array) {
-  var index = -1,
-      length = source.length;
-
-  array || (array = Array(length));
-  while (++index < length) {
-    array[index] = source[index];
-  }
-  return array;
-}
-
-/**
- * Creates a function that wraps `func` to invoke it with the optional `this`
- * binding of `thisArg`.
- *
- * @private
- * @param {Function} func The function to wrap.
- * @param {number} bitmask The bitmask of wrapper flags. See `createWrapper`
- *  for more details.
- * @param {*} [thisArg] The `this` binding of `func`.
- * @returns {Function} Returns the new wrapped function.
- */
-function createBaseWrapper(func, bitmask, thisArg) {
-  var isBind = bitmask & BIND_FLAG,
-      Ctor = createCtorWrapper(func);
-
-  function wrapper() {
-    var fn = (this && this !== root && this instanceof wrapper) ? Ctor : func;
-    return fn.apply(isBind ? thisArg : this, arguments);
-  }
-  return wrapper;
-}
-
-/**
- * Creates a function that produces an instance of `Ctor` regardless of
- * whether it was invoked as part of a `new` expression or by `call` or `apply`.
- *
- * @private
- * @param {Function} Ctor The constructor to wrap.
- * @returns {Function} Returns the new wrapped function.
- */
-function createCtorWrapper(Ctor) {
-  return function() {
-    // Use a `switch` statement to work with class constructors. See
-    // http://ecma-international.org/ecma-262/6.0/#sec-ecmascript-function-objects-call-thisargument-argumentslist
-    // for more details.
-    var args = arguments;
-    switch (args.length) {
-      case 0: return new Ctor;
-      case 1: return new Ctor(args[0]);
-      case 2: return new Ctor(args[0], args[1]);
-      case 3: return new Ctor(args[0], args[1], args[2]);
-      case 4: return new Ctor(args[0], args[1], args[2], args[3]);
-      case 5: return new Ctor(args[0], args[1], args[2], args[3], args[4]);
-      case 6: return new Ctor(args[0], args[1], args[2], args[3], args[4], args[5]);
-      case 7: return new Ctor(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
-    }
-    var thisBinding = baseCreate(Ctor.prototype),
-        result = Ctor.apply(thisBinding, args);
-
-    // Mimic the constructor's `return` behavior.
-    // See https://es5.github.io/#x13.2.2 for more details.
-    return isObject(result) ? result : thisBinding;
-  };
-}
-
-/**
- * Creates a function that wraps `func` to enable currying.
- *
- * @private
- * @param {Function} func The function to wrap.
- * @param {number} bitmask The bitmask of wrapper flags. See `createWrapper`
- *  for more details.
- * @param {number} arity The arity of `func`.
- * @returns {Function} Returns the new wrapped function.
- */
-function createCurryWrapper(func, bitmask, arity) {
-  var Ctor = createCtorWrapper(func);
-
-  function wrapper() {
-    var length = arguments.length,
-        args = Array(length),
-        index = length,
-        placeholder = getHolder(wrapper);
-
-    while (index--) {
-      args[index] = arguments[index];
-    }
-    var holders = (length < 3 && args[0] !== placeholder && args[length - 1] !== placeholder)
-      ? []
-      : replaceHolders(args, placeholder);
-
-    length -= holders.length;
-    if (length < arity) {
-      return createRecurryWrapper(
-        func, bitmask, createHybridWrapper, wrapper.placeholder, undefined,
-        args, holders, undefined, undefined, arity - length);
-    }
-    var fn = (this && this !== root && this instanceof wrapper) ? Ctor : func;
-    return apply(fn, this, args);
-  }
-  return wrapper;
-}
-
-/**
- * Creates a function that wraps `func` to invoke it with optional `this`
- * binding of `thisArg`, partial application, and currying.
- *
- * @private
- * @param {Function|string} func The function or method name to wrap.
- * @param {number} bitmask The bitmask of wrapper flags. See `createWrapper`
- *  for more details.
- * @param {*} [thisArg] The `this` binding of `func`.
- * @param {Array} [partials] The arguments to prepend to those provided to
- *  the new function.
- * @param {Array} [holders] The `partials` placeholder indexes.
- * @param {Array} [partialsRight] The arguments to append to those provided
- *  to the new function.
- * @param {Array} [holdersRight] The `partialsRight` placeholder indexes.
- * @param {Array} [argPos] The argument positions of the new function.
- * @param {number} [ary] The arity cap of `func`.
- * @param {number} [arity] The arity of `func`.
- * @returns {Function} Returns the new wrapped function.
- */
-function createHybridWrapper(func, bitmask, thisArg, partials, holders, partialsRight, holdersRight, argPos, ary, arity) {
-  var isAry = bitmask & ARY_FLAG,
-      isBind = bitmask & BIND_FLAG,
-      isBindKey = bitmask & BIND_KEY_FLAG,
-      isCurried = bitmask & (CURRY_FLAG | CURRY_RIGHT_FLAG),
-      isFlip = bitmask & FLIP_FLAG,
-      Ctor = isBindKey ? undefined : createCtorWrapper(func);
-
-  function wrapper() {
-    var length = arguments.length,
-        args = Array(length),
-        index = length;
-
-    while (index--) {
-      args[index] = arguments[index];
-    }
-    if (isCurried) {
-      var placeholder = getHolder(wrapper),
-          holdersCount = countHolders(args, placeholder);
-    }
-    if (partials) {
-      args = composeArgs(args, partials, holders, isCurried);
-    }
-    if (partialsRight) {
-      args = composeArgsRight(args, partialsRight, holdersRight, isCurried);
-    }
-    length -= holdersCount;
-    if (isCurried && length < arity) {
-      var newHolders = replaceHolders(args, placeholder);
-      return createRecurryWrapper(
-        func, bitmask, createHybridWrapper, wrapper.placeholder, thisArg,
-        args, newHolders, argPos, ary, arity - length
-      );
-    }
-    var thisBinding = isBind ? thisArg : this,
-        fn = isBindKey ? thisBinding[func] : func;
-
-    length = args.length;
-    if (argPos) {
-      args = reorder(args, argPos);
-    } else if (isFlip && length > 1) {
-      args.reverse();
-    }
-    if (isAry && ary < length) {
-      args.length = ary;
-    }
-    if (this && this !== root && this instanceof wrapper) {
-      fn = Ctor || createCtorWrapper(fn);
-    }
-    return fn.apply(thisBinding, args);
-  }
-  return wrapper;
-}
-
-/**
- * Creates a function that wraps `func` to invoke it with the `this` binding
- * of `thisArg` and `partials` prepended to the arguments it receives.
- *
- * @private
- * @param {Function} func The function to wrap.
- * @param {number} bitmask The bitmask of wrapper flags. See `createWrapper`
- *  for more details.
- * @param {*} thisArg The `this` binding of `func`.
- * @param {Array} partials The arguments to prepend to those provided to
- *  the new function.
- * @returns {Function} Returns the new wrapped function.
- */
-function createPartialWrapper(func, bitmask, thisArg, partials) {
-  var isBind = bitmask & BIND_FLAG,
-      Ctor = createCtorWrapper(func);
-
-  function wrapper() {
-    var argsIndex = -1,
-        argsLength = arguments.length,
-        leftIndex = -1,
-        leftLength = partials.length,
-        args = Array(leftLength + argsLength),
-        fn = (this && this !== root && this instanceof wrapper) ? Ctor : func;
-
-    while (++leftIndex < leftLength) {
-      args[leftIndex] = partials[leftIndex];
-    }
-    while (argsLength--) {
-      args[leftIndex++] = arguments[++argsIndex];
-    }
-    return apply(fn, isBind ? thisArg : this, args);
-  }
-  return wrapper;
-}
-
-/**
- * Creates a function that wraps `func` to continue currying.
- *
- * @private
- * @param {Function} func The function to wrap.
- * @param {number} bitmask The bitmask of wrapper flags. See `createWrapper`
- *  for more details.
- * @param {Function} wrapFunc The function to create the `func` wrapper.
- * @param {*} placeholder The placeholder value.
- * @param {*} [thisArg] The `this` binding of `func`.
- * @param {Array} [partials] The arguments to prepend to those provided to
- *  the new function.
- * @param {Array} [holders] The `partials` placeholder indexes.
- * @param {Array} [argPos] The argument positions of the new function.
- * @param {number} [ary] The arity cap of `func`.
- * @param {number} [arity] The arity of `func`.
- * @returns {Function} Returns the new wrapped function.
- */
-function createRecurryWrapper(func, bitmask, wrapFunc, placeholder, thisArg, partials, holders, argPos, ary, arity) {
-  var isCurry = bitmask & CURRY_FLAG,
-      newHolders = isCurry ? holders : undefined,
-      newHoldersRight = isCurry ? undefined : holders,
-      newPartials = isCurry ? partials : undefined,
-      newPartialsRight = isCurry ? undefined : partials;
-
-  bitmask |= (isCurry ? PARTIAL_FLAG : PARTIAL_RIGHT_FLAG);
-  bitmask &= ~(isCurry ? PARTIAL_RIGHT_FLAG : PARTIAL_FLAG);
-
-  if (!(bitmask & CURRY_BOUND_FLAG)) {
-    bitmask &= ~(BIND_FLAG | BIND_KEY_FLAG);
-  }
-
-  var result = wrapFunc(func, bitmask, thisArg, newPartials, newHolders, newPartialsRight, newHoldersRight, argPos, ary, arity);
-  result.placeholder = placeholder;
-  return result;
-}
-
-/**
- * Creates a function that either curries or invokes `func` with optional
- * `this` binding and partially applied arguments.
- *
- * @private
- * @param {Function|string} func The function or method name to wrap.
- * @param {number} bitmask The bitmask of wrapper flags.
- *  The bitmask may be composed of the following flags:
- *     1 - `_.bind`
- *     2 - `_.bindKey`
- *     4 - `_.curry` or `_.curryRight` of a bound function
- *     8 - `_.curry`
- *    16 - `_.curryRight`
- *    32 - `_.partial`
- *    64 - `_.partialRight`
- *   128 - `_.rearg`
- *   256 - `_.ary`
- *   512 - `_.flip`
- * @param {*} [thisArg] The `this` binding of `func`.
- * @param {Array} [partials] The arguments to be partially applied.
- * @param {Array} [holders] The `partials` placeholder indexes.
- * @param {Array} [argPos] The argument positions of the new function.
- * @param {number} [ary] The arity cap of `func`.
- * @param {number} [arity] The arity of `func`.
- * @returns {Function} Returns the new wrapped function.
- */
-function createWrapper(func, bitmask, thisArg, partials, holders, argPos, ary, arity) {
-  var isBindKey = bitmask & BIND_KEY_FLAG;
-  if (!isBindKey && typeof func != 'function') {
-    throw new TypeError(FUNC_ERROR_TEXT);
-  }
-  var length = partials ? partials.length : 0;
-  if (!length) {
-    bitmask &= ~(PARTIAL_FLAG | PARTIAL_RIGHT_FLAG);
-    partials = holders = undefined;
-  }
-  ary = ary === undefined ? ary : nativeMax(toInteger(ary), 0);
-  arity = arity === undefined ? arity : toInteger(arity);
-  length -= holders ? holders.length : 0;
-
-  if (bitmask & PARTIAL_RIGHT_FLAG) {
-    var partialsRight = partials,
-        holdersRight = holders;
-
-    partials = holders = undefined;
-  }
-
-  var newData = [
-    func, bitmask, thisArg, partials, holders, partialsRight, holdersRight,
-    argPos, ary, arity
-  ];
-
-  func = newData[0];
-  bitmask = newData[1];
-  thisArg = newData[2];
-  partials = newData[3];
-  holders = newData[4];
-  arity = newData[9] = newData[9] == null
-    ? (isBindKey ? 0 : func.length)
-    : nativeMax(newData[9] - length, 0);
-
-  if (!arity && bitmask & (CURRY_FLAG | CURRY_RIGHT_FLAG)) {
-    bitmask &= ~(CURRY_FLAG | CURRY_RIGHT_FLAG);
-  }
-  if (!bitmask || bitmask == BIND_FLAG) {
-    var result = createBaseWrapper(func, bitmask, thisArg);
-  } else if (bitmask == CURRY_FLAG || bitmask == CURRY_RIGHT_FLAG) {
-    result = createCurryWrapper(func, bitmask, arity);
-  } else if ((bitmask == PARTIAL_FLAG || bitmask == (BIND_FLAG | PARTIAL_FLAG)) && !holders.length) {
-    result = createPartialWrapper(func, bitmask, thisArg, partials);
-  } else {
-    result = createHybridWrapper.apply(undefined, newData);
-  }
-  return result;
-}
-
-/**
- * Gets the argument placeholder value for `func`.
- *
- * @private
- * @param {Function} func The function to inspect.
- * @returns {*} Returns the placeholder value.
- */
-function getHolder(func) {
-  var object = func;
-  return object.placeholder;
-}
-
-/**
- * Checks if `value` is a valid array-like index.
- *
- * @private
- * @param {*} value The value to check.
- * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
- * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
- */
-function isIndex(value, length) {
-  length = length == null ? MAX_SAFE_INTEGER : length;
-  return !!length &&
-    (typeof value == 'number' || reIsUint.test(value)) &&
-    (value > -1 && value % 1 == 0 && value < length);
-}
-
-/**
- * Reorder `array` according to the specified indexes where the element at
- * the first index is assigned as the first element, the element at
- * the second index is assigned as the second element, and so on.
- *
- * @private
- * @param {Array} array The array to reorder.
- * @param {Array} indexes The arranged array indexes.
- * @returns {Array} Returns `array`.
- */
-function reorder(array, indexes) {
-  var arrLength = array.length,
-      length = nativeMin(indexes.length, arrLength),
-      oldArray = copyArray(array);
-
-  while (length--) {
-    var index = indexes[length];
-    array[length] = isIndex(index, arrLength) ? oldArray[index] : undefined;
-  }
-  return array;
-}
-
-/**
- * Checks if `value` is classified as a `Function` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is correctly classified,
- *  else `false`.
- * @example
- *
- * _.isFunction(_);
- * // => true
- *
- * _.isFunction(/abc/);
- * // => false
- */
-function isFunction(value) {
-  // The use of `Object#toString` avoids issues with the `typeof` operator
-  // in Safari 8 which returns 'object' for typed array and weak map constructors,
-  // and PhantomJS 1.9 which returns 'function' for `NodeList` instances.
-  var tag = isObject(value) ? objectToString.call(value) : '';
-  return tag == funcTag || tag == genTag;
-}
-
-/**
- * Checks if `value` is the
- * [language type](http://www.ecma-international.org/ecma-262/6.0/#sec-ecmascript-language-types)
- * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(_.noop);
- * // => true
- *
- * _.isObject(null);
- * // => false
- */
-function isObject(value) {
-  var type = typeof value;
-  return !!value && (type == 'object' || type == 'function');
-}
-
-/**
- * Checks if `value` is object-like. A value is object-like if it's not `null`
- * and has a `typeof` result of "object".
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
- * @example
- *
- * _.isObjectLike({});
- * // => true
- *
- * _.isObjectLike([1, 2, 3]);
- * // => true
- *
- * _.isObjectLike(_.noop);
- * // => false
- *
- * _.isObjectLike(null);
- * // => false
- */
-function isObjectLike(value) {
-  return !!value && typeof value == 'object';
-}
-
-/**
- * Checks if `value` is classified as a `Symbol` primitive or object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is correctly classified,
- *  else `false`.
- * @example
- *
- * _.isSymbol(Symbol.iterator);
- * // => true
- *
- * _.isSymbol('abc');
- * // => false
- */
-function isSymbol(value) {
-  return typeof value == 'symbol' ||
-    (isObjectLike(value) && objectToString.call(value) == symbolTag);
-}
-
-/**
- * Converts `value` to a finite number.
- *
- * @static
- * @memberOf _
- * @since 4.12.0
- * @category Lang
- * @param {*} value The value to convert.
- * @returns {number} Returns the converted number.
- * @example
- *
- * _.toFinite(3.2);
- * // => 3.2
- *
- * _.toFinite(Number.MIN_VALUE);
- * // => 5e-324
- *
- * _.toFinite(Infinity);
- * // => 1.7976931348623157e+308
- *
- * _.toFinite('3.2');
- * // => 3.2
- */
-function toFinite(value) {
-  if (!value) {
-    return value === 0 ? value : 0;
-  }
-  value = toNumber(value);
-  if (value === INFINITY || value === -INFINITY) {
-    var sign = (value < 0 ? -1 : 1);
-    return sign * MAX_INTEGER;
-  }
-  return value === value ? value : 0;
-}
-
-/**
- * Converts `value` to an integer.
- *
- * **Note:** This function is loosely based on
- * [`ToInteger`](http://www.ecma-international.org/ecma-262/6.0/#sec-tointeger).
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to convert.
- * @returns {number} Returns the converted integer.
- * @example
- *
- * _.toInteger(3.2);
- * // => 3
- *
- * _.toInteger(Number.MIN_VALUE);
- * // => 0
- *
- * _.toInteger(Infinity);
- * // => 1.7976931348623157e+308
- *
- * _.toInteger('3.2');
- * // => 3
- */
-function toInteger(value) {
-  var result = toFinite(value),
-      remainder = result % 1;
-
-  return result === result ? (remainder ? result - remainder : result) : 0;
-}
-
-/**
- * Converts `value` to a number.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to process.
- * @returns {number} Returns the number.
- * @example
- *
- * _.toNumber(3.2);
- * // => 3.2
- *
- * _.toNumber(Number.MIN_VALUE);
- * // => 5e-324
- *
- * _.toNumber(Infinity);
- * // => Infinity
- *
- * _.toNumber('3.2');
- * // => 3.2
- */
-function toNumber(value) {
-  if (typeof value == 'number') {
-    return value;
-  }
-  if (isSymbol(value)) {
-    return NAN;
-  }
-  if (isObject(value)) {
-    var other = isFunction(value.valueOf) ? value.valueOf() : value;
-    value = isObject(other) ? (other + '') : other;
-  }
-  if (typeof value != 'string') {
-    return value === 0 ? value : +value;
-  }
-  value = value.replace(reTrim, '');
-  var isBinary = reIsBinary.test(value);
-  return (isBinary || reIsOctal.test(value))
-    ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
-    : (reIsBadHex.test(value) ? NAN : +value);
-}
-
-module.exports = createWrapper;
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],12:[function(require,module,exports){
-/**
- * lodash (Custom Build) <https://lodash.com/>
- * Build: `lodash modularize exports="npm" -o ./`
- * Copyright jQuery Foundation and other contributors <https://jquery.org/>
- * Released under MIT license <https://lodash.com/license>
- * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
- * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- */
-var createWrapper = require('lodash._createwrapper'),
-    rest = require('lodash.rest');
-
-/** Used as the internal argument placeholder. */
-var PLACEHOLDER = '__lodash_placeholder__';
-
-/** Used to compose bitmasks for wrapper metadata. */
-var BIND_FLAG = 1,
-    PARTIAL_FLAG = 32;
-
-/**
- * Replaces all `placeholder` elements in `array` with an internal placeholder
- * and returns an array of their indexes.
- *
- * @private
- * @param {Array} array The array to modify.
- * @param {*} placeholder The placeholder to replace.
- * @returns {Array} Returns the new array of placeholder indexes.
- */
-function replaceHolders(array, placeholder) {
-  var index = -1,
-      length = array.length,
-      resIndex = 0,
-      result = [];
-
-  while (++index < length) {
-    var value = array[index];
-    if (value === placeholder || value === PLACEHOLDER) {
-      array[index] = PLACEHOLDER;
-      result[resIndex++] = index;
-    }
-  }
-  return result;
-}
-
-/**
- * Gets the argument placeholder value for `func`.
- *
- * @private
- * @param {Function} func The function to inspect.
- * @returns {*} Returns the placeholder value.
- */
-function getHolder(func) {
-  var object = func;
-  return object.placeholder;
-}
-
-/**
- * Creates a function that invokes `func` with the `this` binding of `thisArg`
- * and `partials` prepended to the arguments it receives.
- *
- * The `_.bind.placeholder` value, which defaults to `_` in monolithic builds,
- * may be used as a placeholder for partially applied arguments.
- *
- * **Note:** Unlike native `Function#bind` this method doesn't set the "length"
- * property of bound functions.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Function
- * @param {Function} func The function to bind.
- * @param {*} thisArg The `this` binding of `func`.
- * @param {...*} [partials] The arguments to be partially applied.
- * @returns {Function} Returns the new bound function.
- * @example
- *
- * var greet = function(greeting, punctuation) {
- *   return greeting + ' ' + this.user + punctuation;
- * };
- *
- * var object = { 'user': 'fred' };
- *
- * var bound = _.bind(greet, object, 'hi');
- * bound('!');
- * // => 'hi fred!'
- *
- * // Bound with placeholders.
- * var bound = _.bind(greet, object, _, '!');
- * bound('hi');
- * // => 'hi fred!'
- */
-var bind = rest(function(func, thisArg, partials) {
-  var bitmask = BIND_FLAG;
-  if (partials.length) {
-    var holders = replaceHolders(partials, getHolder(bind));
-    bitmask |= PARTIAL_FLAG;
-  }
-  return createWrapper(func, bitmask, thisArg, partials, holders);
-});
-
-// Assign default placeholders.
-bind.placeholder = {};
-
-module.exports = bind;
-
-},{"lodash._createwrapper":11,"lodash.rest":14}],13:[function(require,module,exports){
-/**
- * lodash (Custom Build) <https://lodash.com/>
- * Build: `lodash modularize exports="npm" -o ./`
- * Copyright jQuery Foundation and other contributors <https://jquery.org/>
- * Released under MIT license <https://lodash.com/license>
- * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
- * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- */
-var baseFlatten = require('lodash._baseflatten'),
-    bind = require('lodash.bind'),
-    rest = require('lodash.rest');
-
-/** Used as references for various `Number` constants. */
-var INFINITY = 1 / 0;
-
-/** `Object#toString` result references. */
-var symbolTag = '[object Symbol]';
-
-/**
- * A specialized version of `_.forEach` for arrays without support for
- * iteratee shorthands.
- *
- * @private
- * @param {Array} array The array to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Array} Returns `array`.
- */
-function arrayEach(array, iteratee) {
-  var index = -1,
-      length = array.length;
-
-  while (++index < length) {
-    if (iteratee(array[index], index, array) === false) {
-      break;
-    }
-  }
-  return array;
-}
-
-/** Used for built-in method references. */
-var objectProto = Object.prototype;
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objectToString = objectProto.toString;
-
-/**
- * Converts `value` to a string key if it's not a string or symbol.
- *
- * @private
- * @param {*} value The value to inspect.
- * @returns {string|symbol} Returns the key.
- */
-function toKey(value) {
-  if (typeof value == 'string' || isSymbol(value)) {
-    return value;
-  }
-  var result = (value + '');
-  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
-}
-
-/**
- * Checks if `value` is object-like. A value is object-like if it's not `null`
- * and has a `typeof` result of "object".
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
- * @example
- *
- * _.isObjectLike({});
- * // => true
- *
- * _.isObjectLike([1, 2, 3]);
- * // => true
- *
- * _.isObjectLike(_.noop);
- * // => false
- *
- * _.isObjectLike(null);
- * // => false
- */
-function isObjectLike(value) {
-  return !!value && typeof value == 'object';
-}
-
-/**
- * Checks if `value` is classified as a `Symbol` primitive or object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is correctly classified,
- *  else `false`.
- * @example
- *
- * _.isSymbol(Symbol.iterator);
- * // => true
- *
- * _.isSymbol('abc');
- * // => false
- */
-function isSymbol(value) {
-  return typeof value == 'symbol' ||
-    (isObjectLike(value) && objectToString.call(value) == symbolTag);
-}
-
-/**
- * Binds methods of an object to the object itself, overwriting the existing
- * method.
- *
- * **Note:** This method doesn't set the "length" property of bound functions.
- *
- * @static
- * @since 0.1.0
- * @memberOf _
- * @category Util
- * @param {Object} object The object to bind and assign the bound methods to.
- * @param {...(string|string[])} methodNames The object method names to bind.
- * @returns {Object} Returns `object`.
- * @example
- *
- * var view = {
- *   'label': 'docs',
- *   'onClick': function() {
- *     console.log('clicked ' + this.label);
- *   }
- * };
- *
- * _.bindAll(view, 'onClick');
- * jQuery(element).on('click', view.onClick);
- * // => Logs 'clicked docs' when clicked.
- */
-var bindAll = rest(function(object, methodNames) {
-  arrayEach(baseFlatten(methodNames, 1), function(key) {
-    key = toKey(key);
-    object[key] = bind(object[key], object);
-  });
-  return object;
-});
-
-module.exports = bindAll;
-
-},{"lodash._baseflatten":10,"lodash.bind":12,"lodash.rest":14}],14:[function(require,module,exports){
-/**
- * lodash (Custom Build) <https://lodash.com/>
- * Build: `lodash modularize exports="npm" -o ./`
- * Copyright jQuery Foundation and other contributors <https://jquery.org/>
- * Released under MIT license <https://lodash.com/license>
- * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
- * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- */
-
-/** Used as the `TypeError` message for "Functions" methods. */
-var FUNC_ERROR_TEXT = 'Expected a function';
-
-/** Used as references for various `Number` constants. */
-var INFINITY = 1 / 0,
-    MAX_INTEGER = 1.7976931348623157e+308,
-    NAN = 0 / 0;
-
-/** `Object#toString` result references. */
-var funcTag = '[object Function]',
-    genTag = '[object GeneratorFunction]',
-    symbolTag = '[object Symbol]';
-
-/** Used to match leading and trailing whitespace. */
-var reTrim = /^\s+|\s+$/g;
-
-/** Used to detect bad signed hexadecimal string values. */
-var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
-
-/** Used to detect binary string values. */
-var reIsBinary = /^0b[01]+$/i;
-
-/** Used to detect octal string values. */
-var reIsOctal = /^0o[0-7]+$/i;
-
-/** Built-in method references without a dependency on `root`. */
-var freeParseInt = parseInt;
-
-/**
- * A faster alternative to `Function#apply`, this function invokes `func`
- * with the `this` binding of `thisArg` and the arguments of `args`.
- *
- * @private
- * @param {Function} func The function to invoke.
- * @param {*} thisArg The `this` binding of `func`.
- * @param {Array} args The arguments to invoke `func` with.
- * @returns {*} Returns the result of `func`.
- */
-function apply(func, thisArg, args) {
-  var length = args.length;
-  switch (length) {
-    case 0: return func.call(thisArg);
-    case 1: return func.call(thisArg, args[0]);
-    case 2: return func.call(thisArg, args[0], args[1]);
-    case 3: return func.call(thisArg, args[0], args[1], args[2]);
-  }
-  return func.apply(thisArg, args);
-}
-
-/** Used for built-in method references. */
-var objectProto = Object.prototype;
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objectToString = objectProto.toString;
-
-/* Built-in method references for those with the same name as other `lodash` methods. */
-var nativeMax = Math.max;
-
-/**
- * Creates a function that invokes `func` with the `this` binding of the
- * created function and arguments from `start` and beyond provided as
- * an array.
- *
- * **Note:** This method is based on the
- * [rest parameter](https://mdn.io/rest_parameters).
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Function
- * @param {Function} func The function to apply a rest parameter to.
- * @param {number} [start=func.length-1] The start position of the rest parameter.
- * @returns {Function} Returns the new function.
- * @example
- *
- * var say = _.rest(function(what, names) {
- *   return what + ' ' + _.initial(names).join(', ') +
- *     (_.size(names) > 1 ? ', & ' : '') + _.last(names);
- * });
- *
- * say('hello', 'fred', 'barney', 'pebbles');
- * // => 'hello fred, barney, & pebbles'
- */
-function rest(func, start) {
-  if (typeof func != 'function') {
-    throw new TypeError(FUNC_ERROR_TEXT);
-  }
-  start = nativeMax(start === undefined ? (func.length - 1) : toInteger(start), 0);
-  return function() {
-    var args = arguments,
-        index = -1,
-        length = nativeMax(args.length - start, 0),
-        array = Array(length);
-
-    while (++index < length) {
-      array[index] = args[start + index];
-    }
-    switch (start) {
-      case 0: return func.call(this, array);
-      case 1: return func.call(this, args[0], array);
-      case 2: return func.call(this, args[0], args[1], array);
-    }
-    var otherArgs = Array(start + 1);
-    index = -1;
-    while (++index < start) {
-      otherArgs[index] = args[index];
-    }
-    otherArgs[start] = array;
-    return apply(func, this, otherArgs);
-  };
-}
-
-/**
- * Checks if `value` is classified as a `Function` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is correctly classified,
- *  else `false`.
- * @example
- *
- * _.isFunction(_);
- * // => true
- *
- * _.isFunction(/abc/);
- * // => false
- */
-function isFunction(value) {
-  // The use of `Object#toString` avoids issues with the `typeof` operator
-  // in Safari 8 which returns 'object' for typed array and weak map constructors,
-  // and PhantomJS 1.9 which returns 'function' for `NodeList` instances.
-  var tag = isObject(value) ? objectToString.call(value) : '';
-  return tag == funcTag || tag == genTag;
-}
-
-/**
- * Checks if `value` is the
- * [language type](http://www.ecma-international.org/ecma-262/6.0/#sec-ecmascript-language-types)
- * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(_.noop);
- * // => true
- *
- * _.isObject(null);
- * // => false
- */
-function isObject(value) {
-  var type = typeof value;
-  return !!value && (type == 'object' || type == 'function');
-}
-
-/**
- * Checks if `value` is object-like. A value is object-like if it's not `null`
- * and has a `typeof` result of "object".
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
- * @example
- *
- * _.isObjectLike({});
- * // => true
- *
- * _.isObjectLike([1, 2, 3]);
- * // => true
- *
- * _.isObjectLike(_.noop);
- * // => false
- *
- * _.isObjectLike(null);
- * // => false
- */
-function isObjectLike(value) {
-  return !!value && typeof value == 'object';
-}
-
-/**
- * Checks if `value` is classified as a `Symbol` primitive or object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is correctly classified,
- *  else `false`.
- * @example
- *
- * _.isSymbol(Symbol.iterator);
- * // => true
- *
- * _.isSymbol('abc');
- * // => false
- */
-function isSymbol(value) {
-  return typeof value == 'symbol' ||
-    (isObjectLike(value) && objectToString.call(value) == symbolTag);
-}
-
-/**
- * Converts `value` to a finite number.
- *
- * @static
- * @memberOf _
- * @since 4.12.0
- * @category Lang
- * @param {*} value The value to convert.
- * @returns {number} Returns the converted number.
- * @example
- *
- * _.toFinite(3.2);
- * // => 3.2
- *
- * _.toFinite(Number.MIN_VALUE);
- * // => 5e-324
- *
- * _.toFinite(Infinity);
- * // => 1.7976931348623157e+308
- *
- * _.toFinite('3.2');
- * // => 3.2
- */
-function toFinite(value) {
-  if (!value) {
-    return value === 0 ? value : 0;
-  }
-  value = toNumber(value);
-  if (value === INFINITY || value === -INFINITY) {
-    var sign = (value < 0 ? -1 : 1);
-    return sign * MAX_INTEGER;
-  }
-  return value === value ? value : 0;
-}
-
-/**
- * Converts `value` to an integer.
- *
- * **Note:** This function is loosely based on
- * [`ToInteger`](http://www.ecma-international.org/ecma-262/6.0/#sec-tointeger).
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to convert.
- * @returns {number} Returns the converted integer.
- * @example
- *
- * _.toInteger(3.2);
- * // => 3
- *
- * _.toInteger(Number.MIN_VALUE);
- * // => 0
- *
- * _.toInteger(Infinity);
- * // => 1.7976931348623157e+308
- *
- * _.toInteger('3.2');
- * // => 3
- */
-function toInteger(value) {
-  var result = toFinite(value),
-      remainder = result % 1;
-
-  return result === result ? (remainder ? result - remainder : result) : 0;
-}
-
-/**
- * Converts `value` to a number.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to process.
- * @returns {number} Returns the number.
- * @example
- *
- * _.toNumber(3.2);
- * // => 3.2
- *
- * _.toNumber(Number.MIN_VALUE);
- * // => 5e-324
- *
- * _.toNumber(Infinity);
- * // => Infinity
- *
- * _.toNumber('3.2');
- * // => 3.2
- */
-function toNumber(value) {
-  if (typeof value == 'number') {
-    return value;
-  }
-  if (isSymbol(value)) {
-    return NAN;
-  }
-  if (isObject(value)) {
-    var other = isFunction(value.valueOf) ? value.valueOf() : value;
-    value = isObject(other) ? (other + '') : other;
-  }
-  if (typeof value != 'string') {
-    return value === 0 ? value : +value;
-  }
-  value = value.replace(reTrim, '');
-  var isBinary = reIsBinary.test(value);
-  return (isBinary || reIsOctal.test(value))
-    ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
-    : (reIsBadHex.test(value) ? NAN : +value);
-}
-
-module.exports = rest;
-
-},{}],15:[function(require,module,exports){
+},{"buffer":14,"is-buffer":6}],9:[function(require,module,exports){
 function identity(x) { return x; }
 
 module.exports = identity;
 module.exports.dash = identity;
 module.exports.dash = identity;
 
-},{}],16:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 // TinyColor v1.3.0
 // https://github.com/bgrins/TinyColor
 // Brian Grinstead, MIT License
@@ -3936,7 +1733,7 @@ else {
 
 })();
 
-},{}],17:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 
 exports = module.exports = trim;
 
@@ -3952,13 +1749,412 @@ exports.right = function(str){
   return str.replace(/\s*$/, '');
 };
 
-},{}],18:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 'use strict';
 
-module.exports = function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max);
+(function() {
+
+var Emitter = require('component-emitter');
+var isNumber = require('is-number');
+var tinycolor = require('tinycolor2');
+var transform = require('dom-transform');
+
+/**
+ * Creates a new SimpleColorPicker
+ * @param {Object} options
+ * @param {String|Number|Object} options.color The default color that the picker will display. Default is #FFFFFF. It can be a hexadecimal number or an hex String.
+ * @param {String|Number|Object} options.background The background color of the picker. Default is transparent. It can be a hexadecimal number or an hex String.
+ * @param {HTMLElement} options.el A dom node to add the picker to. You can also use `colorPicker.appendTo(domNode)` afterwards if you prefer.
+ * @param {Number} options.width Desired width of the color picker. Default is 175.
+ * @param {Number} options.height Desired height of the color picker. Default is 150.
+ */
+function SimpleColorPicker(options) {
+  // Options
+  options = options || {};
+
+  // Properties
+  this.color = null;
+  this.width = 0;
+  this.widthUnits = 'px';
+  this.height = 0;
+  this.heightUnits = 'px';
+  this.hue = 0;
+  this.choosing = false;
+  this.position = {x: 0, y: 0};
+  this.huePosition = 0;
+  this.saturationWidth = 0;
+  this.hueHeight = 0;
+  this.maxHue = 0;
+  this.inputIsNumber = false;
+
+  // Bind methods to scope (if needed)
+  this._onSaturationMouseDown = this._onSaturationMouseDown.bind(this);
+  this._onSaturationMouseMove = this._onSaturationMouseMove.bind(this);
+  this._onSaturationMouseUp = this._onSaturationMouseUp.bind(this);
+  this._onHueMouseDown = this._onHueMouseDown.bind(this);
+  this._onHueMouseMove = this._onHueMouseMove.bind(this);
+  this._onHueMouseUp = this._onHueMouseUp.bind(this);
+
+  // Create DOM
+  this.$el = document.createElement('div');
+  this.$el.className = 'Scp';
+  this.$el.innerHTML = [
+    '<div class="Scp-saturation">',
+      '<div class="Scp-brightness"></div>',
+      '<div class="Scp-sbSelector"></div>',
+    '</div>',
+    '<div class="Scp-hue">',
+      '<div class="Scp-hSelector"></div>',
+    '</div>'
+  ].join('');
+
+  // DOM accessors
+  this.$saturation = this.$el.querySelector('.Scp-saturation');
+  this.$hue = this.$el.querySelector('.Scp-hue');
+  this.$sbSelector = this.$el.querySelector('.Scp-sbSelector');
+  this.$hSelector = this.$el.querySelector('.Scp-hSelector');
+
+  // Event listeners
+  this.$saturation.addEventListener('mousedown', this._onSaturationMouseDown);
+  this.$saturation.addEventListener('touchstart', this._onSaturationMouseDown);
+  this.$hue.addEventListener('mousedown', this._onHueMouseDown);
+  this.$hue.addEventListener('touchstart', this._onHueMouseDown);
+
+  // Some styling and DOMing from options
+  if (options.el) {
+    this.appendTo(options.el);
+  }
+  if (options.background) {
+    this.setBackgroundColor(options.background);
+  }
+  if (options.widthUnits) {
+    this.widthUnits = options.widthUnits;
+  }
+  if (options.heightUnits) {
+    this.heightUnits = options.heightUnits;
+  }
+  this.setSize(options.width || 175, options.height || 150);
+  this.setColor(options.color);
+
+  return this;
+}
+
+Emitter(SimpleColorPicker.prototype);
+
+/* =============================================================================
+  Public API
+============================================================================= */
+/**
+ * Add the SimpleColorPicker instance to a DOM element.
+ * @param  {HTMLElement} el
+ * @return {SimpleColorPicker} Returns itself for chaining purpose
+ */
+SimpleColorPicker.prototype.appendTo = function(el) {
+  el.appendChild(this.$el);
+  return this;
 };
-},{}],19:[function(require,module,exports){
+
+/**
+ * Removes picker from its parent and kill all listeners.
+ * Call this method for proper destroy.
+ */
+SimpleColorPicker.prototype.remove = function() {
+  this._onSaturationMouseUp();
+  this._onHueMouseUp();
+
+  this.$saturation.removeEventListener('mousedown', this._onSaturationMouseDown);
+  this.$saturation.removeEventListener('touchstart', this._onSaturationMouseDown);
+  this.$hue.removeEventListener('mousedown', this._onHueMouseDown);
+  this.$hue.removeEventListener('touchstart', this._onHueMouseDown);
+
+  this.off();
+
+  if (this.$el.parentNode) {
+    this.$el.parentNode.removeChild(this.$el);
+  }
+};
+
+/**
+ * Manually set the current color of the picker. This is the method
+ * used on instantiation to convert `color` option to actual color for
+ * the picker. Param can be a hexadecimal number or an hex String.
+ * @param {String|Number} color hex color desired
+ * @return {SimpleColorPicker} Returns itself for chaining purpose
+ */
+SimpleColorPicker.prototype.setColor = function(color) {
+  if(isNumber(color)) {
+    this.inputIsNumber = true;
+    color = numberToHex(color);
+  } else {
+    this.inputIsNumber = false;
+  }
+  this.color = tinycolor(color);
+
+  var hsvColor = this.color.toHsv();
+
+  if(!isNaN(hsvColor.h)) {
+    this.hue = hsvColor.h;
+  }
+
+  this._moveSelectorTo(this.saturationWidth * hsvColor.s, (1 - hsvColor.v) * this.hueHeight);
+  this._moveHueTo((1 - (this.hue / 360)) * this.hueHeight);
+
+  this._updateHue();
+  return this;
+};
+
+/**
+ * Set size of the color picker for a given width and height. Note that
+ * a padding of 5px will be added if you chose to use the background option
+ * of the constructor.
+ * @param {Number} width
+ * @param {Number} height
+ * @return {SimpleColorPicker} Returns itself for chaining purpose
+ */
+SimpleColorPicker.prototype.setSize = function(width, height) {
+  this.width = width;
+  this.height = height;
+  this.$el.style.width = this.width + this.widthUnits;
+  this.$el.style.height = this.height + this.heightUnits;
+  this.saturationWidth = this.$saturation.clientWidth;
+  this.hueHeight = this.$hue.clientHeight;
+  this.maxHue = this.hueHeight - 2;
+  return this;
+};
+
+/**
+ * Set the background color of the picker. It also adds a 5px padding
+ * for design purpose.
+ * @param {String|Number} color hex color desired for background
+ * @return {SimpleColorPicker} Returns itself for chaining purpose
+ */
+SimpleColorPicker.prototype.setBackgroundColor = function(color) {
+  if(isNumber(color)) {
+    color = numberToHex(color);
+  }
+  this.$el.style.padding = '5px';
+  this.$el.style.background = tinycolor(color).toHexString();
+  return this;
+};
+
+/**
+ * Removes background of the picker if previously set. It's no use
+ * calling this method if you didn't set the background option on start
+ * or if you didn't call setBackgroundColor previously.
+ */
+SimpleColorPicker.prototype.setNoBackground = function() {
+  this.$el.style.padding = '0px';
+  this.$el.style.background = 'none';
+};
+
+/**
+ * Registers callback to the update event of the picker.
+ * picker inherits from [component/emitter](https://github.com/component/emitter)
+ * so you could do the same thing by calling `colorPicker.on('update');`
+ * @param  {Function} callback
+ * @return {SimpleColorPicker} Returns itself for chaining purpose
+ */
+SimpleColorPicker.prototype.onChange = function(callback) {
+  this.on('update', callback);
+  this.emit('update', this.getHexString());
+  return this;
+};
+
+/* =============================================================================
+  Color getters
+============================================================================= */
+/**
+ * Main color getter, will return a formatted color string depending on input
+ * or a number depending on the last setColor call.
+ * @return {Number|String}
+ */
+SimpleColorPicker.prototype.getColor = function() {
+  if(this.inputIsNumber) {
+    return this.getHexNumber();
+  }
+  return this.color.toString();
+};
+
+/**
+ * Returns color as css hex string (ex: '#FF0000').
+ * @return {String}
+ */
+SimpleColorPicker.prototype.getHexString = function() {
+  return this.color.toHexString().toUpperCase();
+};
+
+/**
+ * Returns color as number (ex: 0xFF0000).
+ * @return {Number}
+ */
+SimpleColorPicker.prototype.getHexNumber = function() {
+  return parseInt(this.color.toHex(), 16);
+};
+
+/**
+ * Returns color as {r: 255, g: 0, b: 0} object.
+ * @return {Object}
+ */
+SimpleColorPicker.prototype.getRGB = function() {
+  return this.color.toRgb();
+};
+
+/**
+ * Returns color as {h: 100, s: 1, v: 1} object.
+ * @return {Object}
+ */
+SimpleColorPicker.prototype.getHSV = function() {
+  return this.color.toHsv();
+};
+
+/**
+ * Returns true if color is perceived as dark
+ * @return {Boolean}
+ */
+SimpleColorPicker.prototype.isDark = function() {
+  return this.color.isDark();
+};
+
+/**
+ * Returns true if color is perceived as light
+ * @return {Boolean}
+ */
+SimpleColorPicker.prototype.isLight = function() {
+  return this.color.isLight();
+};
+
+/* =============================================================================
+  "Private" methods
+============================================================================= */
+SimpleColorPicker.prototype._moveSelectorTo = function(x, y) {
+  this.position.x = clamp(x, 0, this.saturationWidth);
+  this.position.y = clamp(y, 0, this.hueHeight);
+
+  transform(this.$sbSelector, {
+    x: this.position.x,
+    y: this.position.y
+  });
+};
+
+SimpleColorPicker.prototype._updateColorFromPosition = function() {
+  this.color = tinycolor({h: this.hue, s: this.position.x / this.saturationWidth, v: 1 - (this.position.y / this.hueHeight)});
+  this._updateColor();
+};
+
+SimpleColorPicker.prototype._moveHueTo = function(y) {
+  this.huePosition = clamp(y, 0, this.maxHue);
+
+  transform(this.$hSelector, {
+    y: this.huePosition
+  });
+};
+
+SimpleColorPicker.prototype._updateHueFromPosition = function() {
+  var hsvColor = this.color.toHsv();
+  this.hue = 360 * (1 - (this.huePosition / this.maxHue));
+  this.color = tinycolor({h: this.hue, s: hsvColor.s, v: hsvColor.v});
+  this._updateHue();
+};
+
+SimpleColorPicker.prototype._updateHue = function() {
+  var hueColor = tinycolor({h: this.hue, s: 1, v: 1});
+  this.$saturation.style.background = 'linear-gradient(to right, #fff, ' + hueColor.toHexString() + ')';
+  this._updateColor();
+};
+
+SimpleColorPicker.prototype._updateColor = function() {
+  this.$sbSelector.style.background = this.color.toHexString();
+  this.$sbSelector.style.borderColor = this.color.isDark() ? '#fff' : '#000';
+  this.emit('update', this.color.toHexString());
+};
+
+/* =============================================================================
+  Events handlers
+============================================================================= */
+SimpleColorPicker.prototype._onSaturationMouseDown = function(e) {
+  this.choosing = true;
+  var sbOffset = this.$saturation.getBoundingClientRect();
+  var xPos = getMousePosition(e).x;
+  var yPos = getMousePosition(e).y;
+  this._moveSelectorTo(xPos - sbOffset.left, yPos - sbOffset.top);
+  this._updateColorFromPosition();
+  window.addEventListener('mouseup', this._onSaturationMouseUp);
+  window.addEventListener('touchend', this._onSaturationMouseUp);
+  window.addEventListener('mousemove', this._onSaturationMouseMove);
+  window.addEventListener('touchmove', this._onSaturationMouseMove);
+  e.preventDefault();
+};
+
+SimpleColorPicker.prototype._onSaturationMouseMove = function(e) {
+  var sbOffset = this.$saturation.getBoundingClientRect();
+  var xPos = getMousePosition(e).x;
+  var yPos = getMousePosition(e).y;
+  this._moveSelectorTo(xPos - sbOffset.left, yPos - sbOffset.top);
+  this._updateColorFromPosition();
+};
+
+SimpleColorPicker.prototype._onSaturationMouseUp = function() {
+  this.choosing = false;
+  window.removeEventListener('mouseup', this._onSaturationMouseUp);
+  window.removeEventListener('touchend', this._onSaturationMouseUp);
+  window.removeEventListener('mousemove', this._onSaturationMouseMove);
+  window.removeEventListener('touchmove', this._onSaturationMouseMove);
+};
+
+SimpleColorPicker.prototype._onHueMouseDown = function(e) {
+  this.choosing = true;
+  var hOffset = this.$hue.getBoundingClientRect();
+  var yPos = getMousePosition(e).y;
+  this._moveHueTo(yPos - hOffset.top);
+  this._updateHueFromPosition();
+  window.addEventListener('mouseup', this._onHueMouseUp);
+  window.addEventListener('touchend', this._onHueMouseUp);
+  window.addEventListener('mousemove', this._onHueMouseMove);
+  window.addEventListener('touchmove', this._onHueMouseMove);
+  e.preventDefault();
+};
+
+SimpleColorPicker.prototype._onHueMouseMove = function(e) {
+  var hOffset = this.$hue.getBoundingClientRect();
+  var yPos = getMousePosition(e).y;
+  this._moveHueTo(yPos - hOffset.top);
+  this._updateHueFromPosition();
+};
+
+SimpleColorPicker.prototype._onHueMouseUp = function() {
+  this.choosing = false;
+  window.removeEventListener('mouseup', this._onHueMouseUp);
+  window.removeEventListener('touchend', this._onHueMouseUp);
+  window.removeEventListener('mousemove', this._onHueMouseMove);
+  window.removeEventListener('touchmove', this._onHueMouseMove);
+};
+
+/* =============================================================================
+  Helper functions
+============================================================================= */
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function getMousePosition(e) {
+  e = (e.type.indexOf('touch') === 0) ? e.touches[0] : e;
+  return {
+    x: e.clientX,
+    y: e.clientY
+  };
+}
+
+function numberToHex(color) {
+  return color = '#' + ('00000' + (color | 0).toString(16)).substr(-6);
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = SimpleColorPicker;
+}
+
+})();
+
+},{"component-emitter":1,"dom-transform":2,"is-number":7,"tinycolor2":10}],13:[function(require,module,exports){
 'use strict'
 
 exports.toByteArray = toByteArray
@@ -4069,7 +2265,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],20:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 (function (global){
 /*!
  * The buffer module from node.js, for the browser.
@@ -5529,14 +3725,14 @@ function blitBuffer (src, dst, offset, length) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"base64-js":19,"ieee754":23,"isarray":21}],21:[function(require,module,exports){
+},{"base64-js":13,"ieee754":17,"isarray":15}],15:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
-},{}],22:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -5836,7 +4032,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],23:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -5922,7 +4118,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],24:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 /**
  *  Copyright (c) 2014-2015, Facebook, Inc.
  *  All rights reserved.
@@ -10895,7 +9091,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   return Immutable;
 
 }));
-},{}],25:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var simpleSwipeEvents = (function (element) {
   'use strict';
   var gestureInput = 'ontouchstart' in window ? 'touch' : 'mouse',
@@ -11025,7 +9221,7 @@ if (typeof module !== 'undefined') {
 }
 
 
-},{}],26:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 (function () {
   'use strict';
 
@@ -11542,13 +9738,19 @@ if (typeof module !== 'undefined') {
 
 }).call(this);
 
-},{}],27:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 (() => {
 
   const doc = window.document;
-
   //const ColorPicker = require('simple-color-picker');
-  const ColorPicker = require('../../simple-color-picker/index.js');
+  const ColorPicker = require('../../simple-color-picker/src/index.js');
+  const rally = require('./rally');
+  const EventEmitter = require('events');
+  const emitter = new EventEmitter();
+  const simpleSwipeEvents = require('simple-swipe-events');
+
+  // init and helpers
+
   const player1ColorPicker = new ColorPicker({
     color: '#0000FF',
     el: doc.getElementById('player1color'),
@@ -11567,22 +9769,19 @@ if (typeof module !== 'undefined') {
     height: 40
   });
 
-  // UI Events
-
-  const EventEmitter = require('events');
-  const emitter = new EventEmitter();
-  const rally = require('./rally');
-  const simpleSwipeEvents = require('simple-swipe-events');
-
   let game = [rally.rallyContainer];
+
   const currentRally = () => game[game.length -1];
+
   const showMessage = (messageTitle, messageDetail) => {
-    document.getElementById('message').innerHTML = `<strong>${messageTitle}</strong><br>${messageDetail || ''}`;
-    document.getElementById('message').classList.add('active');
+    doc.getElementById('message').innerHTML = `<strong>${messageTitle}</strong><br>${messageDetail || ''}`;
+    doc.getElementById('message').classList.add('active');
   };
+
   const removeMessage = (time) => {
-    setTimeout(() => document.getElementById('message').classList.remove('active'), time);
+    setTimeout(() => doc.getElementById('message').classList.remove('active'), time);
   };
+
   const changeDefaults = function (fn) {
     return function () {
       if (!this.classList.contains('active')) {
@@ -11591,6 +9790,8 @@ if (typeof module !== 'undefined') {
       }
     };
   };
+
+  // UI Events
 
   doc.getElementById('handOut').onclick = () => {
     game.push(rally.handOut(currentRally()));
@@ -11631,8 +9832,11 @@ if (typeof module !== 'undefined') {
   };
 
   doc.getElementById('serveLeft').onclick = changeDefaults(rally.switchServingSide);
+
   doc.getElementById('serveRight').onclick = changeDefaults(rally.switchServingSide);
+
   doc.getElementById('player1').onclick = changeDefaults(rally.changeServer);
+
   doc.getElementById('player2').onclick = changeDefaults(rally.changeServer);
 
   emitter.on('stateUpdated', () => {
@@ -11646,26 +9850,42 @@ if (typeof module !== 'undefined') {
   });
 
   const pushRight = () => {
-    document.getElementById('leftMenu').classList.add('active')
-    document.getElementById('container').classList.add('pushedRight')
+    doc.getElementById('leftMenu').classList.add('active')
+    doc.getElementById('container').classList.add('pushedRight')
   }
 
   const pushLeft = () => {
-    document.getElementById('leftMenu').classList.remove('active')
-    document.getElementById('container').classList.remove('pushedRight')
+    doc.getElementById('leftMenu').classList.remove('active')
+    doc.getElementById('container').classList.remove('pushedRight')
   }
 
-  document.getElementById('container').addEventListener('swipe-right', () => {
+  doc.getElementById('container').addEventListener('swipe-right', () => {
     pushRight();
   }, true);
 
-  document.getElementById('leftMenu').addEventListener('swipe-left', () => {
+  doc.getElementById('leftMenu').addEventListener('swipe-left', () => {
     pushLeft();
   }, true);
 
+  doc.getElementById('player1name').addEventListener('input', (e) => {
+    doc.getElementById('player1').innerHTML = e.target.value;
+  });
+
+  doc.getElementById('player2name').addEventListener('input', (e) => {
+    doc.getElementById('player2').innerHTML = e.target.value;
+  });
+
+  player1ColorPicker.on('update', (color) => {
+    doc.getElementById('player1colorOutput').style.backgroundColor = color;
+  });
+
+  player2ColorPicker.on('update', (color) => {
+    doc.getElementById('player2colorOutput').style.backgroundColor = color;
+  });
+
 })();
 
-},{"../../simple-color-picker/index.js":1,"./rally":28,"events":22,"simple-swipe-events":25}],28:[function(require,module,exports){
+},{"../../simple-color-picker/src/index.js":12,"./rally":22,"events":16,"simple-swipe-events":19}],22:[function(require,module,exports){
 (() => {
 const compose = require('xo-utils').compose;
 const curry = require('xo-utils').curry;
@@ -11724,4 +9944,4 @@ module.exports = {
 
 })();
 
-},{"immutable":24,"xo-utils":26}]},{},[27,28]);
+},{"immutable":18,"xo-utils":20}]},{},[21,22]);

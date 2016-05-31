@@ -130,6 +130,10 @@ body {
     font-size: 3vh;
 }
 
+#leftMenu .field .colorPicker {
+    height: 40vw;
+}
+
 #leftMenu .field .colorOutput {
     float: right;
     width: 45vw;
