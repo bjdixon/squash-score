@@ -101,8 +101,12 @@
     const servingSide = currentRally().get('servingSide');
     const servingPlayer = currentRally().get('servingPlayer');
     Array.prototype.slice.call(doc.getElementsByClassName('active')).forEach((el) => el.classList.remove('active'));
-    doc.getElementById('score1').innerHTML = currentRally().get('player1');
-    doc.getElementById('score2').innerHTML = currentRally().get('player2');
+    const player1Score = doc.getElementById('score1').innerHTML = currentRally().get('player1');
+    const player2Score = doc.getElementById('score2').innerHTML = currentRally().get('player2');
+    const pointsThreshold = doc.getElementById('pointsThreshold').value;
+    if (Math.abs(player1Score - player2Score) > 1 && (player1Score >= pointsThreshold || player2Score >= pointsThreshold)) {
+      showMessage('Winner!', doc.getElementById(player1Score > player2Score ? 'player1name' : 'player2name').value);
+    }
     doc.getElementById(servingSide === 'right' ? 'serveRight' : 'serveLeft').classList.add('active');
     doc.getElementById(servingPlayer === 'player1' ? 'player1' : 'player2').classList.add('active');
   });
