@@ -9848,7 +9848,6 @@ if (typeof module !== 'undefined') {
     const pointsThreshold = doc.getElementById('pointsThreshold').value;
     if (Math.abs(player1Score - player2Score) > 1 && (player1Score >= pointsThreshold || player2Score >= pointsThreshold)) {
       showMessage('Winner!', doc.getElementById(player1Score > player2Score ? 'player1name' : 'player2name').value);
-        console.log('winner');
     }
     doc.getElementById(servingSide === 'right' ? 'serveRight' : 'serveLeft').classList.add('active');
     doc.getElementById(servingPlayer === 'player1' ? 'player1' : 'player2').classList.add('active');
@@ -9873,11 +9872,11 @@ if (typeof module !== 'undefined') {
   }, true);
 
   doc.getElementById('player1name').addEventListener('input', (e) => {
-    doc.getElementById('player1').innerHTML = e.target.value;
+    doc.getElementById('player1nameDisplay').innerHTML = e.target.value;
   });
 
   doc.getElementById('player2name').addEventListener('input', (e) => {
-    doc.getElementById('player2').innerHTML = e.target.value;
+    doc.getElementById('player2nameDisplay').innerHTML = e.target.value;
   });
 
   player1ColorPicker.on('update', (color) => {

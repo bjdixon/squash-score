@@ -130,11 +130,11 @@
   }, true);
 
   doc.getElementById('player1name').addEventListener('input', (e) => {
-    doc.getElementById('player1').innerHTML = e.target.value;
+    doc.getElementById('player1nameDisplay').innerHTML = e.target.value;
   });
 
   doc.getElementById('player2name').addEventListener('input', (e) => {
-    doc.getElementById('player2').innerHTML = e.target.value;
+    doc.getElementById('player2nameDisplay').innerHTML = e.target.value;
   });
 
   player1ColorPicker.on('update', (color) => {

@@ -38,13 +38,20 @@ body {
     border-radius: 0.8vw;
 }
 
+.component .nameOut {
+    display: inline-block;
+    width: 100%;
+    text-decoration: none;
+}
+
 .small {
     height: 8vh;
     line-height: 3vh;
-    font-size: 3vh;   text-decoration: none;
+    font-size: 3vh;
+    text-decoration: none
 }
 
-.small.active {
+.small.active .nameOut {
     text-decoration: underline;
 }
 

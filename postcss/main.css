@@ -40,16 +40,26 @@ body {
     line-height: 15vh;
     border: 1px solid $grey;
     border-radius: 0.8vw;
+
+    .nameOut {
+        display: inline-block;
+        width: 100%;
+        text-decoration: none;
+    }
 }
 
 .small {
     height: 8vh;
     line-height: $smallFont;
     font-size: $smallFont;
+    text-decoration: none;
 
     &.active {
-        text-decoration: underline;
-    }   text-decoration: none;
+
+        .nameOut {
+            text-decoration: underline;
+        }
+    }
 }
 
 .large {
