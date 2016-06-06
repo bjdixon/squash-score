@@ -9881,10 +9881,14 @@ if (typeof module !== 'undefined') {
 
   player1ColorPicker.on('update', (color) => {
     doc.getElementById('player1colorOutput').style.backgroundColor = color;
+    doc.getElementById('player1nameDisplay').style.backgroundColor = color;
+    doc.getElementById('player1nameDisplay').style.color = player1ColorPicker.isDark() ? '#fff' : '#000';
   });
 
   player2ColorPicker.on('update', (color) => {
     doc.getElementById('player2colorOutput').style.backgroundColor = color;
+    doc.getElementById('player2nameDisplay').style.backgroundColor = color;
+    doc.getElementById('player2nameDisplay').style.color = player2ColorPicker.isDark() ? '#fff' : '#000';
   });
 
 })();

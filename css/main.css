@@ -42,6 +42,8 @@ body {
     display: inline-block;
     width: 100%;
     text-decoration: none;
+    padding-top: 1vh;
+    padding-bottom: 1vh;
 }
 
 .small {
