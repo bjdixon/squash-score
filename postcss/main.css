@@ -86,7 +86,7 @@ body {
 }
 
 .no-border {
-    border: 1px solid $white;
+    border: none;
 }
 
 #message {

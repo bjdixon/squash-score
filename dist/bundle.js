@@ -9783,19 +9783,34 @@ if (typeof module !== 'undefined') {
   };
 
   const changeDefaults = function (fn) {
+    console.log(this);
+    const _this = this;
     return function () {
-      if (!this.classList.contains('active')) {
+      console.log(_this);
+      if (!_this.classList.contains('active')) {
         game.push(fn(currentRally()));
         emitter.emit('stateUpdated');
       }
     };
   };
 
+  const switchColors = () => {
+    const previousHandOutBackgroundColor = doc.getElementById('handOut').style.backgroundColor;
+    const previousHandOutColor = doc.getElementById('handOut').style.color;
+    doc.getElementById('handOut').style.backgroundColor = doc.getElementById('pointWon').style.backgroundColor;
+    doc.getElementById('handOut').style.color = doc.getElementById('pointWon').style.color;
+    doc.getElementById('pointWon').style.backgroundColor = previousHandOutBackgroundColor;
+    doc.getElementById('pointWon').style.color = previousHandOutColor;
+  }
+
   // UI Events
+
+  // game events
 
   doc.getElementById('handOut').onclick = () => {
     game.push(rally.handOut(currentRally()));
     emitter.emit('stateUpdated');
+    switchColors();
   };
  
   doc.getElementById('pointWon').onclick = () => {
@@ -9831,13 +9846,29 @@ if (typeof module !== 'undefined') {
     }
   };
 
-  doc.getElementById('serveLeft').onclick = changeDefaults(rally.switchServingSide);
+  doc.getElementById('serveLeft').onclick = function () {
+    const _this = this;
+    changeDefaults.call(_this, rally.switchServingSide)();
+  };
 
-  doc.getElementById('serveRight').onclick = changeDefaults(rally.switchServingSide);
+  doc.getElementById('serveRight').onclick = function () {
+    const _this = this;
+    changeDefaults.call(_this, rally.switchServingSide)();
+  };
 
-  doc.getElementById('player1').onclick = changeDefaults(rally.changeServer);
+  doc.getElementById('player1').onclick = function () {
+    const _this = this;
+    console.log(_this);
+    changeDefaults.call(_this, rally.changeServer)();
+    switchColors();
+  };
 
-  doc.getElementById('player2').onclick = changeDefaults(rally.changeServer);
+  doc.getElementById('player2').onclick = function () {
+    const _this = this;
+    console.log(_this);
+    changeDefaults.call(_this, rally.changeServer)();
+    switchColors();
+  };
 
   emitter.on('stateUpdated', () => {
     const servingSide = currentRally().get('servingSide');
@@ -9871,6 +9902,8 @@ if (typeof module !== 'undefined') {
     pushLeft();
   }, true);
 
+  // options menu events
+
   doc.getElementById('player1name').addEventListener('input', (e) => {
     doc.getElementById('player1nameDisplay').innerHTML = e.target.value;
   });
@@ -9883,12 +9916,16 @@ if (typeof module !== 'undefined') {
     doc.getElementById('player1colorOutput').style.backgroundColor = color;
     doc.getElementById('player1nameDisplay').style.backgroundColor = color;
     doc.getElementById('player1nameDisplay').style.color = player1ColorPicker.isDark() ? '#fff' : '#000';
+    doc.getElementById(currentRally().get('servingPlayer') === 'player1' ? 'pointWon' : 'handOut').style.backgroundColor = color;
+    doc.getElementById(currentRally().get('servingPlayer') === 'player1' ? 'pointWon' : 'handOut').style.color = player1ColorPicker.isDark() ? '#fff' : '#000';
   });
 
   player2ColorPicker.on('update', (color) => {
     doc.getElementById('player2colorOutput').style.backgroundColor = color;
     doc.getElementById('player2nameDisplay').style.backgroundColor = color;
     doc.getElementById('player2nameDisplay').style.color = player2ColorPicker.isDark() ? '#fff' : '#000';
+    doc.getElementById(currentRally().get('servingPlayer') === 'player2' ? 'pointWon' : 'handOut').style.backgroundColor = color;
+    doc.getElementById(currentRally().get('servingPlayer') === 'player2' ? 'pointWon' : 'handOut').style.color = player2ColorPicker.isDark() ? '#fff' : '#000';
   });
 
 })();
