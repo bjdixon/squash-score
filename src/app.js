@@ -40,18 +40,6 @@
     setTimeout(() => doc.getElementById('message').classList.remove('active'), time);
   };
 
-  const changeDefaults = function (fn) {
-    console.log(this);
-    const _this = this;
-    return function () {
-      console.log(_this);
-      if (!_this.classList.contains('active')) {
-        game.push(fn(currentRally()));
-        emitter.emit('stateUpdated');
-      }
-    };
-  };
-
   const switchColors = () => {
     const previousHandOutBackgroundColor = doc.getElementById('handOut').style.backgroundColor;
     const previousHandOutColor = doc.getElementById('handOut').style.color;
@@ -60,6 +48,27 @@
     doc.getElementById('pointWon').style.backgroundColor = previousHandOutBackgroundColor;
     doc.getElementById('pointWon').style.color = previousHandOutColor;
   }
+
+  const changeDefaults = function (fn) {
+    const _this = this;
+    return function () {
+      if (!_this.classList.contains('active')) {
+        game.push(fn(currentRally()));
+        emitter.emit('stateUpdated');
+      }
+    };
+  };
+
+  const switchSides = function () {
+    const _this = this;
+    changeDefaults.call(_this, rally.switchServingSide)();
+  };
+
+  const switchServers = function () {
+    const _this = this;
+    changeDefaults.call(_this, rally.changeServer)();
+    switchColors();
+  };
 
   // UI Events
 
@@ -104,29 +113,13 @@
     }
   };
 
-  doc.getElementById('serveLeft').onclick = function () {
-    const _this = this;
-    changeDefaults.call(_this, rally.switchServingSide)();
-  };
+  doc.getElementById('serveLeft').onclick = switchSides;
 
-  doc.getElementById('serveRight').onclick = function () {
-    const _this = this;
-    changeDefaults.call(_this, rally.switchServingSide)();
-  };
+  doc.getElementById('serveRight').onclick = switchSides;
 
-  doc.getElementById('player1').onclick = function () {
-    const _this = this;
-    console.log(_this);
-    changeDefaults.call(_this, rally.changeServer)();
-    switchColors();
-  };
+  doc.getElementById('player1').onclick = switchServers;
 
-  doc.getElementById('player2').onclick = function () {
-    const _this = this;
-    console.log(_this);
-    changeDefaults.call(_this, rally.changeServer)();
-    switchColors();
-  };
+  doc.getElementById('player2').onclick = switchServers;
 
   emitter.on('stateUpdated', () => {
     const servingSide = currentRally().get('servingSide');
