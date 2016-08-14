@@ -9,5 +9,5 @@ I've only tested in chrome so far. Mobile firefox and safari may well be broken.
 
 [test link](http://bjdixon.github.io/squash-score/)
 
-*This is a no framework version of the app.*
+*This is a react.js version of the app.*
 
