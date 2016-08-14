@@ -8,3 +8,6 @@ This is supposed to be used on a mobile device in portrait mode. On desktop or l
 I've only tested in chrome so far. Mobile firefox and safari may well be broken.
 
 [test link](http://bjdixon.github.io/squash-score/)
+
+*This is a no framework version of the app.*
+
