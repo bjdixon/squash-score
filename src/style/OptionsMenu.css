@@ -1,0 +1,4 @@
+$grey: #ccc;
+.root {
+    color: $grey;
+}

@@ -1,0 +1,4 @@
+$grey: #999;
+.root {
+    color: $grey;
+}
