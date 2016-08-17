@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import styles from '../style/OptionsMenu.css'
+import styles from './css/OptionsMenu.css'
 
 
 export default class OptionsMenu extends Component {

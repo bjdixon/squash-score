@@ -7,7 +7,7 @@ const autoprefixer = require('autoprefixer');
 module.exports = {
   context: path.join(__dirname, "src"),
   devtool: debug ? "sourcemap" : null,
-  entry: "./js/App.js",
+  entry: "./App.js",
   devServer: {
     inline: true,
     port: 8080

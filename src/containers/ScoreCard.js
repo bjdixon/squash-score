@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import styles from '../style/ScoreCard.css'
+import styles from './css/ScoreCard.css'
 
 
 export default class ScoreCard extends Component {
