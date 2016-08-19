@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import styles from './css/ScoreCard.css';
-import Button from '../components/Button';
-import Name from '../components/Name';
-import Score from '../components/Score';
-import Service from '../components/Service';
-import Message from '../components/Message';
+import styles from './css/Container.css';
+import Button from './Button';
+import Name from './Name';
+import Score from './Score';
+import Service from './Service';
+import Message from './Message';
 
 
 export default class ScoreCard extends Component {

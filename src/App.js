@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ReactDom from 'react-dom';
-import ScoreCard from './containers/ScoreCard'
-import OptionsMenu from './containers/OptionsMenu'
+import ScoreCard from './ScoreCard/Container'
+import OptionsMenu from './OptionsMenu/Container'
 
 
 class Content extends Component {
