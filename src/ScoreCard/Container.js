@@ -10,7 +10,7 @@ import Message from './Message';
 export default class ScoreCard extends Component {
   render() {
     return (
-      <div id="container">
+      <div id="container" className={ styles.root }>
         <div id="top">
           <Name ref="player1" />
           <Name ref="player2" />
