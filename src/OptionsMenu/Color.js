@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import styles from './css/Color.css';
+import style from './css/Color.css';
 
 
 export default class Color extends Component {

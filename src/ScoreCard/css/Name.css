@@ -1,0 +1,18 @@
+@import '../../_vars.css';
+
+.name {
+  composes: component name no-border from './Container.css';
+  height: 8vh;
+  line-height: $smallFont;
+  font-size: $smallFont;
+  text-decoration: none;
+}
+
+.nameOut {
+  display: inline-block;
+  width: 100%;
+  text-decoration: none;
+  padding-top: 1vh;
+  padding-bottom: 1vh;
+  line-height: 3vh;
+}

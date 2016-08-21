@@ -1,0 +1,10 @@
+@import '../../_vars.css';
+
+.score {
+  composes: component no-border from './Container.css';
+  margin-top: -4vh; 
+  height: calc($smallFont * 8);
+  line-height: calc($smallFont * 8);
+  font-size: calc($smallFont * 7);
+
+}

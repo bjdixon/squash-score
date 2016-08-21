@@ -1,0 +1,5 @@
+@import '../../_vars.css';
+
+.button {
+  composes: component from './Container.css';
+}

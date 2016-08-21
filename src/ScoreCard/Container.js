@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import styles from './css/Container.css';
+import style from './css/Container.css';
 import Button from './Button';
 import Name from './Name';
 import Score from './Score';
@@ -10,7 +10,7 @@ import Message from './Message';
 export default class ScoreCard extends Component {
   render() {
     return (
-      <div id="container" className={ styles.root }>
+      <div className={ style.container }>
         <div id="top">
           <Name ref="player1" />
           <Name ref="player2" />

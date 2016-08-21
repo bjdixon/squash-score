@@ -1,4 +1,53 @@
-$grey: #999;
-.root {
-    color: $grey;
+@import '../../_vars.css';
+
+.container {
+  width: 100vw;
+  padding: $padding;
+  transform: translateX(0);
+  transition: 0.5s;
+  overflow: hidden;
+
+  &.pushedRight {
+    transform: translateX(100vw);
+  }
 }
+
+.component {
+  display: inline-block;
+  width: 45vw;
+  height: 15vh;
+  margin-top: 0.6vh;
+  margin-left: 1vw;
+  margin-right: 1vw;
+  text-align: center;
+  font-size: $smallFont;
+  line-height: 15vh;
+  border: 1px solid $grey;
+  border-radius: 0.8vw;
+}
+
+.small {
+  height: 8vh;
+  line-height: $smallFont;
+  font-size: $smallFont;
+  text-decoration: none;
+
+  &.active {
+
+    .nameOut {
+      text-decoration: underline;
+    }
+  }
+}
+
+.large {
+  height: calc($smallFont * 8);
+  line-height: calc($smallFont * 8);
+  font-size: calc($smallFont * 7);
+  margin-top: -4vh;
+}
+
+.no-border {
+  border: none;
+}
+

@@ -1,4 +1,57 @@
-$grey: #ccc;
-.root {
-    color: $grey;
+@import '../../vars'
+
+.options {
+  background-color: #ccc;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: translateX(-100vw);
+  transition: 0.5s;
+  overflow: hidden;
+
+  &.active {
+    transform: translateX(0);
+  }
+
+  #optionsTitle {
+    padding: $padding;
+    padding-bottom: 0;
+    font-size: calc($smallFont * 2);
+  }
+
+  .field {
+    font-size: $smallFont;
+    padding: $padding;
+
+    label {
+      display: block;
+      margin-bottom: $padding;
+    }
+
+    input {
+      padding: 1vw;
+      font-size: $smallFont;
+    }
+
+    .colorPicker {
+      height: 40vw;
+    }
+
+    .colorOutput {
+      float: right;
+      width: 45vw;
+      height: 40vw;
+
+      &#player1colorOutput {
+        background-color: #0000FF;
+      }
+
+      &#player2colorOutput {
+        background-color: #FF0000;
+      }
+    }
+  }
 }
+

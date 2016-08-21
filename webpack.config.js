@@ -25,7 +25,7 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loader: 'style-loader!css-loader?modules!postcss-loader?sourceMap=inline'
+        loader: 'style-loader!css-loader?modules!postcss-loader'
       }
     ]
   },

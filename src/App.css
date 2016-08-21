@@ -1,0 +1,13 @@
+@import './vars';
+
+html {
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  position: relative;
+  overflow: hidden;
+  font-family: $fontFamily;
+}
+

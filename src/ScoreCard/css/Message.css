@@ -1,0 +1,22 @@
+.message {
+  height: 0;
+  width: 0;
+  overflow: hidden;
+
+  &.active {
+    position: absolute;
+    top: 8vh;
+    left: 0;
+    width: 100%;
+    height: 38vh;
+    background-color: $white;
+    text-align: center;
+    line-height: calc($smallFont * 6);
+    font-size: $smallFont;
+
+    strong {
+      font-size: calc($smallFont * 2);
+    }
+  }
+}
+
