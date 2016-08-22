@@ -9,7 +9,7 @@ export default class OptionsMenu extends Component {
   render() {
     return (
       <nav className={ style.options }>
-        <div id="optionsTitle">Game Options</div>
+        <h2>Game Options</h2>
         <Name ref="player1name" />
         <Color ref="player1color" />
         <Name ref="player2name" />

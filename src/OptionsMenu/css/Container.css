@@ -1,4 +1,4 @@
-@import '../../vars'
+@import '../../_vars.css';
 
 .options {
   background-color: #ccc;
@@ -15,7 +15,8 @@
     transform: translateX(0);
   }
 
-  #optionsTitle {
+  h2 {
+    margin: 0;
     padding: $padding;
     padding-bottom: 0;
     font-size: calc($smallFont * 2);
