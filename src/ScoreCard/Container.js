@@ -5,23 +5,9 @@ import Name from './Name';
 import Score from './Score';
 import Service from './Service';
 import Message from './Message';
-import simpleSwipeEvents from 'simple-swipe-events';
 
 
 export default class ScoreCard extends Component {
-  constructor(props) {
-    super(props);
-    this.pushRight = this.pushRight.bind(this);
-  }
-  componentDidMount() {
-    window.addEventListener('swipe-right', this.pushRight, true);
-  }
-  componentWillUnmount() {
-    window.removeEventListener('swipe-right', this.pushRight);
-  }
-  pushRight() {
-    // handle animation
-  }
   render() {
     return (
       <div className={ style.container }>
