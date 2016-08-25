@@ -6,8 +6,8 @@ export default class Name extends Component {
   render() {
     return (
       <div className={ style.field }>
-        <label htmlFor={ this.props.ref }>Player</label>
-        <input type="text" placeholder="Name" name={ this.props.ref } /> 
+        <label htmlFor={ this.ref }>Player</label>
+        <input type="text" placeholder="Name" name={ this.ref } /> 
       </div>
     );
   }

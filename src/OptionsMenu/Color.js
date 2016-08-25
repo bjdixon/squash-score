@@ -6,8 +6,8 @@ export default class Color extends Component {
   render() {
     return (
       <div className={ style.field }>
-        <div id={ this.props.ref } name={ this.props.ref } className="colorPicker">
-          <div id={ this.props.ref + "output" } className="colorOutput"></div>
+        <div id={ this.ref } name={ this.ref } className="colorPicker">
+          <div id={ this.ref + "output" } className="colorOutput"></div>
         </div>
       </div>
     );
