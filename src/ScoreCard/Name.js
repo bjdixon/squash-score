@@ -14,3 +14,7 @@ export default class Name extends Component {
   }
 }
 
+Name.propTypes = {
+  onClick: React.PropTypes.function
+};
+

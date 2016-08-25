@@ -13,7 +13,7 @@ export default class ScoreCard extends Component {
   }
   switchSide(side) {
     // switch serving side
-    console.log(this.refs[side]);
+    console.log(side);
   }
   handOut() {
     // switch serving player and increment the new serving player's score
@@ -37,12 +37,12 @@ export default class ScoreCard extends Component {
     return (
       <div className={ style.container }>
         <div id="top">
-          <Name ref="player1" onClick={ this.switchServer.bind(this, 'player1') } />
-          <Name ref="player2" onClick={ this.switchServer.bind(this, 'player2') } />
+          <Name ref="player1" onClick={ this.switchServer.bind(this) } />
+          <Name ref="player2" onClick={ this.switchServer.bind(this) } />
           <Score ref="score1" />
           <Score ref="score2" />
-          <Service ref="serveLeft" onClick={ this.switchSide.bind(this, 'serveLeft') } />
-          <Service ref="serveRight" onClick={ this.switchSide.bind(this, 'serveRight') } />
+          <Service ref="serveLeft" onClick={ this.switchSide.bind(this) } />
+          <Service ref="serveRight" onClick={ this.switchSide.bind(this) } />
           <Message />
         </div>
         <div id="bottom">
