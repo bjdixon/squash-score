@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import style from './css/Service.css';
 
 
@@ -13,6 +13,6 @@ export default class Service extends Component {
 }
 
 Service.propTypes = {
-  onClick: React.PropTypes.function
+  onClick: PropTypes.func.isRequired
 };
 
