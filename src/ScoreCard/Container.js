@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import style from './css/Container.css';
 import Button from './Button';
 import Name from './Name';
 import Score from './Score';
 import Service from './Service';
 import Message from './Message';
-
+import { setScore, setServingPlayer, setServingSide, setChallenge, setWinner } from '../actions';
 
 export default class ScoreCard extends Component {
   switchServer() {

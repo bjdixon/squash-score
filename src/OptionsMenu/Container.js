@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import style from './css/Container.css';
 import Name from './Name';
 import Color from './Color';
 import Points from './Points';
+import { setName, setColor, setThreshold } from '../actions';
 
 
 export default class OptionsMenu extends Component {

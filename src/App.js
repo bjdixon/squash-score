@@ -4,6 +4,12 @@ import ScoreCard from './ScoreCard/Container';
 import OptionsMenu from './OptionsMenu/Container';
 import style from './App.css';
 import simpleSwipeEvents from 'simple-swipe-events';
+import { Provider } from 'react-redux';
+import { createStore } from 'redux';
+import squashApp from './reducers';
+
+
+let store = createStore(squashApp);
 
 
 class Content extends Component {
@@ -26,10 +32,12 @@ class Content extends Component {
   }
   render() {
     return (
-      <div>
-        <ScoreCard />
-        <OptionsMenu />,
-      </div>
+      <Provider store={store}>
+        <div>
+          <ScoreCard />
+          <OptionsMenu />,
+        </div>
+      </Provider>
     );
   }
 }
