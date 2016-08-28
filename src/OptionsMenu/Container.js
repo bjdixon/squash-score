@@ -7,10 +7,11 @@ import Points from './Points';
 import { setName, setColor, setThreshold } from '../actions';
 
 
-export default class OptionsMenu extends Component {
+class OptionsMenu extends Component {
   render() {
+    const transform = { transform: `translateX(${ this.props.ui.view === 'OptionsMenu' ? '0' : '-100vw' })` };
     return (
-      <nav className={ style.options }>
+      <nav className={ style.options } style={ transform }>
         <h2>Game Options</h2>
         <Name ref="player1name" />
         <Color ref="player1color" />
@@ -22,3 +23,8 @@ export default class OptionsMenu extends Component {
   }
 }
 
+const mapStateToProps = (state) => {
+  return { ui: state.ui };
+};
+
+export default connect(mapStateToProps)(OptionsMenu);

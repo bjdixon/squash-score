@@ -7,6 +7,7 @@ import simpleSwipeEvents from 'simple-swipe-events';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
 import squashApp from './reducers';
+import { setCurrentView } from './actions';
 
 
 let store = createStore(squashApp);
@@ -15,8 +16,8 @@ let store = createStore(squashApp);
 class Content extends Component {
   constructor(props) {
     super(props);
-    this.swipeRight = this.swipe.bind(this, 'right');
-    this.swipeLeft = this.swipe.bind(this, 'left');
+    this.swipeRight = this.show.bind(this, 'OptionsMenu');
+    this.swipeLeft = this.show.bind(this, 'ScoreCard');
   }
   componentDidMount() {
     window.addEventListener('swipe-right', this.swipeRight, true);
@@ -26,16 +27,15 @@ class Content extends Component {
     window.removeEventListener('swipe-right', this.swipeRight);
     window.removeEventListener('swipe-left', this.swipeLeft);
   }
-  swipe(direction) { 
-    // animate left or right
-    console.log(direction);
+  show(view) {
+    store.dispatch(setCurrentView(view));
   }
   render() {
     return (
-      <Provider store={store}>
+      <Provider store={ store }>
         <div>
           <ScoreCard />
-          <OptionsMenu />,
+          <OptionsMenu />
         </div>
       </Provider>
     );

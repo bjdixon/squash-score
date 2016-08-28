@@ -1,4 +1,9 @@
- setThreshold 
+export const setCurrentView = (currentView) => {
+  return {
+    type: 'CURRENT_VIEW',
+    currentView
+  };
+};
 
 export const setScore = (playerNumber, score) => {
   return {

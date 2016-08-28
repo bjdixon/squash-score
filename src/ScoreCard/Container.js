@@ -8,7 +8,7 @@ import Service from './Service';
 import Message from './Message';
 import { setScore, setServingPlayer, setServingSide, setChallenge, setWinner } from '../actions';
 
-export default class ScoreCard extends Component {
+class ScoreCard extends Component {
   switchServer() {
     // switch serving player
   }
@@ -35,8 +35,9 @@ export default class ScoreCard extends Component {
     // remove last action
   }
   render() {
+    const transform = { transform: `translateX(${ this.props.ui.view === 'ScoreCard' ? '0' : '100vw' })` };
     return (
-      <div className={ style.container }>
+      <div className={ style.container } style={ transform }>
         <div id="top">
           <Name ref="player1" onClick={ this.switchServer.bind(this) } />
           <Name ref="player2" onClick={ this.switchServer.bind(this) } />
@@ -59,3 +60,8 @@ export default class ScoreCard extends Component {
   }
 }
 
+const mapStateToProps = (state) => {
+  return { ui: state.ui };
+};
+
+export default connect(mapStateToProps)(ScoreCard);
