@@ -13,18 +13,29 @@ class OptionsMenu extends Component {
     return (
       <nav className={ style.options } style={ transform }>
         <h2>Game Options</h2>
-        <Name ref="player1name" />
+        <Name ref="player1name" player={ this.props.options.player1 } update={ this.props.updateName.bind(this, 1) }/>
         <Color ref="player1color" />
-        <Name ref="player2name" />
+        <Name ref="player2name" player={ this.props.options.player2 } update={ this.props.updateName.bind(this, 2) }/>
         <Color ref="player2color" />
-        <Points ref="pointsThreshold"/>
+        <Points ref="pointsThreshold" />
       </nav>
     );
   }
 }
 
 const mapStateToProps = (state) => {
-  return { ui: state.ui };
+  return {
+    ui: state.ui,
+    options: state.options
+  };
 };
 
-export default connect(mapStateToProps)(OptionsMenu);
+const mapDispatchToProps = function(dispatch) {
+  return {
+    updateName: (playerNumber, e) => {
+      dispatch(setName(playerNumber, e.target.value));
+    }
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(OptionsMenu);

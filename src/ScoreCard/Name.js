@@ -7,7 +7,7 @@ export default class Name extends Component {
     return (
       <div className={ style.name } onClick={ this.props.onClick }>
         <span className={ style.nameOut }>
-          Name
+          { this.props.player }
         </span>
       </div>
     );

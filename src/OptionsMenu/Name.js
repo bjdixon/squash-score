@@ -7,7 +7,7 @@ export default class Name extends Component {
     return (
       <div className={ style.field }>
         <label htmlFor={ this.ref }>Player</label>
-        <input type="text" placeholder="Name" name={ this.ref } /> 
+        <input type="text" placeholder={ this.props.player } onChange={ this.props.update } name={ this.ref } />
       </div>
     );
   }
