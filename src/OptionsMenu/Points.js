@@ -7,7 +7,7 @@ export default class Points extends Component {
     return (
       <div className={ style.field }>
         <label htmlFor={ this.ref }>Points require to win</label>
-        <input type="number" placeholder="11" name={ this.ref } /> 
+        <input type="number" placeholder="11" onChange={ this.props.update } name={ this.ref } /> 
       </div>
     );
   }

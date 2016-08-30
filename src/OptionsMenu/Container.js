@@ -17,7 +17,7 @@ class OptionsMenu extends Component {
         <Color ref="player1color" />
         <Name ref="player2name" player={ this.props.options.player2 } update={ this.props.updateName.bind(this, 2) }/>
         <Color ref="player2color" />
-        <Points ref="pointsThreshold" />
+        <Points ref="pointsThreshold" update={ this.props.updateThreshold.bind(this) }/>
       </nav>
     );
   }
@@ -34,6 +34,9 @@ const mapDispatchToProps = function(dispatch) {
   return {
     updateName: (playerNumber, e) => {
       dispatch(setName(playerNumber, e.target.value));
+    },
+    updateThreshold: (e) => {
+      dispatch(setThreshold(e.target.value));
     }
   };
 };
