@@ -14,21 +14,21 @@ class ScoreCard extends Component {
     return (
       <div className={ style.container } style={ transform }>
         <div id="top">
-          <Name ref="player1" player={ this.props.options.player1 } onClick={ this.props.updateServer.bind(this, 1) } isActive={ this.props.ui.servingPlayer === 1 }/>
-          <Name ref="player2" player={ this.props.options.player2 } onClick={ this.props.updateServer.bind(this, 2) } isActive={ this.props.ui.servingPlayer === 2 }/>
-          <Score ref="score1" />
-          <Score ref="score2" />
-          <Service ref="serveLeft" onClick={ this.props.updateServingSide.bind(this, 'left') } isActive={ this.props.ui.servingSide === 'left' }/>
-          <Service ref="serveRight" onClick={ this.props.updateServingSide.bind(this, 'right') } isActive={ this.props.ui.servingSide === 'right' }/>
+          <Name player={ this.props.options.player1 } onClick={ this.props.updateServer.bind(this, 1) } isActive={ this.props.ui.servingPlayer === 1 }/>
+          <Name player={ this.props.options.player2 } onClick={ this.props.updateServer.bind(this, 2) } isActive={ this.props.ui.servingPlayer === 2 }/>
+          <Score />
+          <Score />
+          <Service onClick={ this.props.updateServingSide.bind(this, 'left') } isActive={ this.props.ui.servingSide === 'left' }/>
+          <Service onClick={ this.props.updateServingSide.bind(this, 'right') } isActive={ this.props.ui.servingSide === 'right' }/>
           <Message />
         </div>
         <div id="bottom">
-          <Button ref="handOut" text="Hand Out" />
-          <Button ref="pointWon" text="Point Won" />
-          <Button ref="let" text="Let" />
-          <Button ref="stroke" text="Stroke" />
-          <Button ref="noLet" text="No Let" />
-          <Button ref="undo" text="Undo" />
+          <Button text="Hand Out" />
+          <Button text="Point Won" />
+          <Button text="Let" />
+          <Button text="Stroke" />
+          <Button text="No Let" />
+          <Button text="Undo" />
         </div>
       </div>
     );

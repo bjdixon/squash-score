@@ -13,11 +13,11 @@ class OptionsMenu extends Component {
     return (
       <nav className={ style.options } style={ transform }>
         <h2>Game Options</h2>
-        <Name ref="player1name" player={ this.props.options.player1 } update={ this.props.updateName.bind(this, 1) }/>
-        <Color ref="player1color" />
-        <Name ref="player2name" player={ this.props.options.player2 } update={ this.props.updateName.bind(this, 2) }/>
-        <Color ref="player2color" />
-        <Points ref="pointsThreshold" update={ this.props.updateThreshold.bind(this) }/>
+        <Name player={ this.props.options.player1 } update={ this.props.updateName.bind(this, 1) }/>
+        <Color />
+        <Name player={ this.props.options.player2 } update={ this.props.updateName.bind(this, 2) }/>
+        <Color />
+        <Points update={ this.props.updateThreshold.bind(this) }/>
       </nav>
     );
   }
