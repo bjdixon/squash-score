@@ -39,8 +39,8 @@ class ScoreCard extends Component {
     return (
       <div className={ style.container } style={ transform }>
         <div id="top">
-          <Name ref="player1" player={ this.props.options.player1 } onClick={ this.switchServer.bind(this) } />
-          <Name ref="player2" player={ this.props.options.player2 } onClick={ this.switchServer.bind(this) } />
+          <Name ref="player1" player={ this.props.options.player1 } onClick={ this.props.updateServer.bind(this, 1) } isActive={ this.props.ui.servingPlayer === 1 }/>
+          <Name ref="player2" player={ this.props.options.player2 } onClick={ this.props.updateServer.bind(this, 2) } isActive={ this.props.ui.servingPlayer === 2 }/>
           <Score ref="score1" />
           <Score ref="score2" />
           <Service ref="serveLeft" onClick={ this.switchSide.bind(this) } />
@@ -67,4 +67,12 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps)(ScoreCard);
+const mapDispatchToProps = function(dispatch) {
+  return {
+    updateServer: (playerNumber) => {
+      dispatch(setServingPlayer(playerNumber));
+    }
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ScoreCard);

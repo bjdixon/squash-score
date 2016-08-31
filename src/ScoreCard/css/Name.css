@@ -15,4 +15,9 @@
   padding-top: 1vh;
   padding-bottom: 1vh;
   line-height: 3vh;
+
+  .active {
+    text-decoration: underline;
+  }
 }
+

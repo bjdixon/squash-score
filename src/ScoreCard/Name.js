@@ -7,7 +7,7 @@ export default class Name extends Component {
     return (
       <div className={ style.name } onClick={ this.props.onClick }>
         <span className={ style.nameOut }>
-          { this.props.player }
+          <span className={ this.props.isActive && style.active }>{ this.props.player }</span>
         </span>
       </div>
     );
