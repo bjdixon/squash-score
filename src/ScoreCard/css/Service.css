@@ -12,7 +12,10 @@
   margin-top: -2vh;
   background-color: $white;
 
-  &.active {
+  .active {
     background-color: $darkGrey;
+    height: 100%;
+    width: 100%;
+    border-radius: 12vw;
   }
 }
