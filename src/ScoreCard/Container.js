@@ -42,7 +42,7 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = function(dispatch) {
+const mapDispatchToProps = (dispatch) => {
   return {
     updateServer: (playerNumber) => {
       dispatch(setServingPlayer(playerNumber));

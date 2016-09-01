@@ -30,7 +30,7 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = function(dispatch) {
+const mapDispatchToProps = (dispatch) => {
   return {
     updateName: (playerNumber, e) => {
       dispatch(setName(playerNumber, e.target.value));
