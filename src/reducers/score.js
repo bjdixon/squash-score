@@ -31,6 +31,9 @@ const score = (state, action) => {
           challenge: null
         }
       ]
+    },
+    'UNDO': {
+      rallies: state.rallies.length > 1 ? state.rallies.slice(0, state.rallies.length -1) : state.rallies
     }
   };
   return Object.assign({}, state, actionTypes[action.type]);

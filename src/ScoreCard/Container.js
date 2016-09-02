@@ -6,7 +6,7 @@ import Name from './Name';
 import Score from './Score';
 import Service from './Service';
 import Message from './Message';
-import { setScore, setServingPlayer, setServingSide, setChallenge, setWinner } from '../actions';
+import { setScore, setServingPlayer, setServingSide, setChallenge, setWinner, undo } from '../actions';
 
 class ScoreCard extends Component {
   noop() {
@@ -31,7 +31,7 @@ class ScoreCard extends Component {
           <Button text="Let" onClick={ this.noop.bind(this) }/>
           <Button text="Stroke" onClick={ this.noop.bind(this) }/>
           <Button text="No Let" onClick={ this.noop.bind(this) }/>
-          <Button text="Undo" onClick={ this.noop.bind(this) }/>
+          <Button text="Undo" onClick={ this.props.undo.bind(this) }/>
         </div>
       </div>
     );
@@ -69,6 +69,9 @@ const mapDispatchToProps = (dispatch) => {
       const newSide = props.ui.servingSide === 'left' ? 'right' : 'left';
       dispatch(setScore(playerNumber, newScore));
       dispatch(setServingSide(newSide));
+    },
+    undo: () => {
+      dispatch(undo());
     }
   };
 };

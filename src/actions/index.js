@@ -61,3 +61,8 @@ export const setThreshold = (threshold) => {
   };
 };
 
+export const undo = () => {
+  return {
+    type: 'UNDO'
+  };
+};
