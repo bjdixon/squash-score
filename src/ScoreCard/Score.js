@@ -6,7 +6,7 @@ export default class Score extends Component {
   render() {
     return (
       <div className={ style.score }>
-        0
+        { this.props.points }
       </div>
     );
   }
