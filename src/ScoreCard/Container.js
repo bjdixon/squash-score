@@ -27,7 +27,7 @@ class ScoreCard extends Component {
         </div>
         <div id="bottom">
           <Button text="Hand Out" onClick={ this.props.handout.bind(this, this.props) }/>
-          <Button text="Point Won" onClick={ this.noop.bind(this) }/>
+          <Button text="Point Won" onClick={ this.props.pointWon.bind(this, this.props) }/>
           <Button text="Let" onClick={ this.noop.bind(this) }/>
           <Button text="Stroke" onClick={ this.noop.bind(this) }/>
           <Button text="No Let" onClick={ this.noop.bind(this) }/>
@@ -61,6 +61,14 @@ const mapDispatchToProps = (dispatch) => {
       dispatch(setScore(playerNumber, newScore));
       dispatch(setServingPlayer(playerNumber));
       dispatch(setServingSide('right'));
+    },
+    pointWon: (props) => {
+      const playerNumber = props.ui.servingPlayer;
+      const rallies = props.score.rallies;
+      const newScore = rallies[rallies.length -1]['score' + playerNumber] + 1;
+      const newSide = props.ui.servingSide === 'left' ? 'right' : 'left';
+      dispatch(setScore(playerNumber, newScore));
+      dispatch(setServingSide(newSide));
     }
   };
 };
