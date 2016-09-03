@@ -23,12 +23,12 @@ class ScoreCard extends Component {
           <Score points={ this.props.score.rallies[this.props.score.rallies.length -1].score2 }/>
           <Service onClick={ this.props.updateServingSide.bind(this, 'left') } isActive={ this.props.ui.servingSide === 'left' }/>
           <Service onClick={ this.props.updateServingSide.bind(this, 'right') } isActive={ this.props.ui.servingSide === 'right' }/>
-          <Message />
+          <Message challenge={ this.props.score.rallies[this.props.score.rallies.length -1].challenge }/>
         </div>
         <div id="bottom">
           <Button text="Hand Out" onClick={ this.props.handout.bind(this, this.props) }/>
           <Button text="Point Won" onClick={ this.props.pointWon.bind(this, this.props) }/>
-          <Button text="Let" onClick={ this.noop.bind(this) }/>
+          <Button text="Let" onClick={ this.props.yesLet.bind(this) }/>
           <Button text="Stroke" onClick={ this.noop.bind(this) }/>
           <Button text="No Let" onClick={ this.noop.bind(this) }/>
           <Button text="Undo" onClick={ this.props.undo.bind(this) }/>
@@ -72,6 +72,9 @@ const mapDispatchToProps = (dispatch) => {
     },
     undo: () => {
       dispatch(undo());
+    },
+    yesLet: () => {
+      dispatch(setChallenge('let'));
     }
   };
 };
