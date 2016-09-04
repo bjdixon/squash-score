@@ -14,17 +14,17 @@ export default class Message extends Component {
       'let': {
         title: 'Yes Let',
         secondaryMessage: '',
-        timeout: 3000
+        timeout: 2000
       },
       'no let': {
         title: 'No Let',
         secondaryMessage: 'Award point or handout',
-        timeout: 5000
+        timeout: 3000
       },
       'stroke': {
         title: 'Stroke',
         secondaryMessage: 'Award point or handout',
-        timeout: 5000
+        timeout: 3000
       }
     };
   }
@@ -44,7 +44,7 @@ export default class Message extends Component {
       <div className={ this.state.className }>
         <strong>{ this.state.messageTitle }</strong>
         <br/>
-        { this.state.secondaryMessge }
+        { this.state.secondaryMessage }
       </div>
     );
   }

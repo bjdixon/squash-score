@@ -30,7 +30,7 @@ class ScoreCard extends Component {
           <Button text="Point Won" onClick={ this.props.pointWon.bind(this, this.props) }/>
           <Button text="Let" onClick={ this.props.yesLet.bind(this) }/>
           <Button text="Stroke" onClick={ this.noop.bind(this) }/>
-          <Button text="No Let" onClick={ this.noop.bind(this) }/>
+          <Button text="No Let" onClick={ this.props.noLet.bind(this) }/>
           <Button text="Undo" onClick={ this.props.undo.bind(this) }/>
         </div>
       </div>
@@ -75,6 +75,9 @@ const mapDispatchToProps = (dispatch) => {
     },
     yesLet: () => {
       dispatch(setChallenge('let'));
+    },
+    noLet: () => {
+      dispatch(setChallenge('no let'));
     }
   };
 };
