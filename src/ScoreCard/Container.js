@@ -6,7 +6,7 @@ import Name from './Name';
 import Score from './Score';
 import Service from './Service';
 import Message from './Message';
-import { setScore, setServingPlayer, setServingSide, setChallenge, setWinner, undo } from '../actions';
+import { setScore, setServingPlayer, setServingSide, setChallenge, setWinner, undo, setMessageVisibility } from '../actions';
 
 class ScoreCard extends Component {
   noop() {
@@ -23,7 +23,7 @@ class ScoreCard extends Component {
           <Score points={ this.props.score.rallies[this.props.score.rallies.length -1].score2 }/>
           <Service onClick={ this.props.updateServingSide.bind(this, 'left') } isActive={ this.props.ui.servingSide === 'left' }/>
           <Service onClick={ this.props.updateServingSide.bind(this, 'right') } isActive={ this.props.ui.servingSide === 'right' }/>
-          <Message challenge={ this.props.score.rallies[this.props.score.rallies.length -1].challenge }/>
+          <Message challenge={ this.props.score.rallies[this.props.score.rallies.length -1].challenge } isActive={ this.props.ui.messageVisible }/>
         </div>
         <div id="bottom">
           <Button text="Hand Out" onClick={ this.props.handout.bind(this, this.props) }/>
@@ -58,6 +58,7 @@ const mapDispatchToProps = (dispatch) => {
       const playerNumber = props.ui.servingPlayer === 1 ? 2 : 1;
       const rallies = props.score.rallies;
       const newScore = rallies[rallies.length -1]['score' + playerNumber] + 1;
+      dispatch(setMessageVisibility(false));
       dispatch(setScore(playerNumber, newScore));
       dispatch(setServingPlayer(playerNumber));
       dispatch(setServingSide('right'));
@@ -67,6 +68,7 @@ const mapDispatchToProps = (dispatch) => {
       const rallies = props.score.rallies;
       const newScore = rallies[rallies.length -1]['score' + playerNumber] + 1;
       const newSide = props.ui.servingSide === 'left' ? 'right' : 'left';
+      dispatch(setMessageVisibility(false));
       dispatch(setScore(playerNumber, newScore));
       dispatch(setServingSide(newSide));
     },
@@ -75,6 +77,10 @@ const mapDispatchToProps = (dispatch) => {
     },
     challenge: (decision) => {
       dispatch(setChallenge(decision));
+      dispatch(setMessageVisibility(true));
+      if (decision === 'let') {
+        setTimeout(() => dispatch(setMessageVisibility(false)), 3000)
+      }
     }
   };
 };

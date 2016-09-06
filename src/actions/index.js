@@ -5,6 +5,13 @@ export const setCurrentView = (currentView) => {
   };
 };
 
+export const setMessageVisibility = (visible) => {
+  return {
+    type: 'MESSAGE_VISIBILITY',
+    visible
+  };
+};
+
 export const setScore = (playerNumber, score) => {
   return {
     type: 'SCORE_FOR_PLAYER_' + playerNumber,

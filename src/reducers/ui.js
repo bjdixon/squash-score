@@ -8,13 +8,17 @@ const ui = (state, action) => {
     },
     'SERVING_SIDE': {
       servingSide: action.servingSide
-    }
+    },
+    'MESSAGE_VISIBILITY': {
+      messageVisible: action.visible
+    },
   };
   if (state == null) {
     return {
       view: 'ScoreCard',
       servingPlayer: 1,
-      servingSide: 'right'
+      servingSide: 'right',
+      messageVisible: false
     };
   }
   return Object.assign({}, state, actionTypes[action.type]);
