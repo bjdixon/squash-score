@@ -9,9 +9,6 @@ import Message from './Message';
 import { setScore, setServingPlayer, setServingSide, setChallenge, setWinner, undo, setMessageVisibility } from '../actions';
 
 class ScoreCard extends Component {
-  noop() {
-    //
-  }
   render() {
     const transform = { transform: `translateX(${ this.props.ui.view === 'ScoreCard' ? '0' : '100vw' })` };
     return (
