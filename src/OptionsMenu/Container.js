@@ -9,9 +9,9 @@ import { setName, setColor, setThreshold } from '../actions';
 
 class OptionsMenu extends Component {
   render() {
-    const transform = { transform: `translateX(${ this.props.ui.view === 'OptionsMenu' ? '0' : '-100vw' })` };
+    const active = this.props.ui.view === 'OptionsMenu' ? style.active : '';
     return (
-      <nav className={ style.options } style={ transform }>
+      <nav className={ `${style.options} ${active}` }>
         <h2>Game Options</h2>
         <Name player={ this.props.options.player1 } update={ this.props.updateName.bind(this, 1) }/>
         <Color />

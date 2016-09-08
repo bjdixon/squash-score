@@ -10,9 +10,9 @@ import { setScore, setServingPlayer, setServingSide, setChallenge, setWinner, un
 
 class ScoreCard extends Component {
   render() {
-    const transform = { transform: `translateX(${ this.props.ui.view === 'ScoreCard' ? '0' : '100vw' })` };
+    const pushedRight = this.props.ui.view !== 'ScoreCard' ? style.pushedRight : '';
     return (
-      <div className={ style.container } style={ transform }>
+      <div className={ `${style.container} ${pushedRight}` }>
         <div id="top">
           <Name player={ this.props.options.player1 } onClick={ this.props.updateServer.bind(this, 1) } isActive={ this.props.ui.servingPlayer === 1 }/>
           <Name player={ this.props.options.player2 } onClick={ this.props.updateServer.bind(this, 2) } isActive={ this.props.ui.servingPlayer === 2 }/>
