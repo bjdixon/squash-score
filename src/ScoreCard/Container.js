@@ -16,11 +16,11 @@ class ScoreCard extends Component {
         <div id="top">
           <Name player={ this.props.options.player1 } onClick={ this.props.updateServer.bind(this, 1) } isActive={ this.props.ui.servingPlayer === 1 }/>
           <Name player={ this.props.options.player2 } onClick={ this.props.updateServer.bind(this, 2) } isActive={ this.props.ui.servingPlayer === 2 }/>
-          <Score points={ this.props.score.rallies[this.props.score.rallies.length -1].score1 }/>
-          <Score points={ this.props.score.rallies[this.props.score.rallies.length -1].score2 }/>
+          <Score points={ this.props.score.previousRally.score1 }/>
+          <Score points={ this.props.score.previousRally.score2 }/>
           <Service onClick={ this.props.updateServingSide.bind(this, 'left') } isActive={ this.props.ui.servingSide === 'left' }/>
           <Service onClick={ this.props.updateServingSide.bind(this, 'right') } isActive={ this.props.ui.servingSide === 'right' }/>
-          <Message challenge={ this.props.score.rallies[this.props.score.rallies.length -1].challenge } isActive={ this.props.ui.messageVisible }/>
+          <Message challenge={ this.props.score.previousRally.challenge } isActive={ this.props.ui.messageVisible }/>
         </div>
         <div id="bottom">
           <Button text="Hand Out" onClick={ this.props.handout.bind(this, this.props) }/>
@@ -53,8 +53,7 @@ const mapDispatchToProps = (dispatch) => {
     },
     handout: (props) => {
       const playerNumber = props.ui.servingPlayer === 1 ? 2 : 1;
-      const rallies = props.score.rallies;
-      const newScore = rallies[rallies.length -1]['score' + playerNumber] + 1;
+      const newScore = props.score.previousRally['score' + playerNumber] + 1;
       dispatch(setMessageVisibility(false));
       dispatch(setScore(playerNumber, newScore));
       dispatch(setServingPlayer(playerNumber));
@@ -62,8 +61,7 @@ const mapDispatchToProps = (dispatch) => {
     },
     pointWon: (props) => {
       const playerNumber = props.ui.servingPlayer;
-      const rallies = props.score.rallies;
-      const newScore = rallies[rallies.length -1]['score' + playerNumber] + 1;
+      const newScore = props.score.previousRally['score' + playerNumber] + 1;
       const newSide = props.ui.servingSide === 'left' ? 'right' : 'left';
       dispatch(setMessageVisibility(false));
       dispatch(setScore(playerNumber, newScore));
