@@ -12,6 +12,14 @@ export const setMessageVisibility = (visible) => {
   };
 };
 
+export const setMessage = (title, secondaryMessage, timesout) => {
+  return {
+    type: 'MESSAGE_CONTENT',
+    title,
+    secondaryMessage
+  }
+}
+
 export const setScore = (playerNumber, score) => {
   return {
     type: 'SCORE_FOR_PLAYER_' + playerNumber,

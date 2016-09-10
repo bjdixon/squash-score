@@ -6,7 +6,7 @@ import Name from './Name';
 import Score from './Score';
 import Service from './Service';
 import Message from './Message';
-import { setScore, setServingPlayer, setServingSide, setChallenge, setWinner, undo, setMessageVisibility } from '../actions';
+import { setScore, setServingPlayer, setServingSide, setChallenge, setWinner, undo, setMessageVisibility, setMessage } from '../actions';
 
 class ScoreCard extends Component {
   render() {
@@ -20,20 +20,40 @@ class ScoreCard extends Component {
           <Score points={ this.props.score.previousRally.score2 }/>
           <Service onClick={ this.props.updateServingSide.bind(this, 'left') } isActive={ this.props.ui.servingSide === 'left' }/>
           <Service onClick={ this.props.updateServingSide.bind(this, 'right') } isActive={ this.props.ui.servingSide === 'right' }/>
-          <Message challenge={ this.props.score.previousRally.challenge } isActive={ this.props.ui.messageVisible }/>
+          <Message title={ this.props.ui.messageTitle } secondaryMessage={ this.props.ui.secondaryMessage } isActive={ this.props.ui.messageVisible }/>
         </div>
         <div id="bottom">
           <Button text="Hand Out" onClick={ this.props.handout.bind(this, this.props) }/>
           <Button text="Point Won" onClick={ this.props.pointWon.bind(this, this.props) }/>
-          <Button text="Let" onClick={ this.props.challenge.bind(this, 'let') }/>
-          <Button text="Stroke" onClick={ this.props.challenge.bind(this, 'stroke') }/>
-          <Button text="No Let" onClick={ this.props.challenge.bind(this, 'no let') }/>
+          <Button text="Let" onClick={ this.props.challenge.bind(this, this.props.messages.let) }/>
+          <Button text="Stroke" onClick={ this.props.challenge.bind(this, this.props.messages.stroke) }/>
+          <Button text="No Let" onClick={ this.props.challenge.bind(this, this.props.messages['no let']) }/>
           <Button text="Undo" onClick={ this.props.undo.bind(this) }/>
         </div>
       </div>
     );
   }
 }
+
+ScoreCard.defaultProps = {
+  messages: {
+    'let': {
+      title: 'Yes Let',
+      secondaryMessage: '',
+      timesout: true
+    },
+    'no let': {
+      title: 'No Let',
+      secondaryMessage: 'Award point or handout',
+      timesout: false
+    },
+    'stroke': {
+      title: 'Stroke',
+      secondaryMessage: 'Award point or handout',
+      timesout: false
+    }
+  }
+};
 
 const mapStateToProps = (state) => {
   return {
@@ -70,11 +90,12 @@ const mapDispatchToProps = (dispatch) => {
     undo: () => {
       dispatch(undo());
     },
-    challenge: (decision) => {
-      dispatch(setChallenge(decision));
+    challenge: (message) => {
+      dispatch(setChallenge(message.title));
+      dispatch(setMessage(message.title, message.secondaryMessage));
       dispatch(setMessageVisibility(true));
-      if (decision === 'let') {
-        setTimeout(() => dispatch(setMessageVisibility(false)), 3000)
+      if (message.timesout) {
+        setTimeout(() => dispatch(setMessageVisibility(false)), 2000)
       }
     }
   };

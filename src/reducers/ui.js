@@ -12,13 +12,18 @@ const ui = (state, action) => {
     'MESSAGE_VISIBILITY': {
       messageVisible: action.visible
     },
+    'MESSAGE_CONTENT': {
+      messageTitle: action.title,
+      secondaryMessage: action.secondaryMessage,
+    }
   };
   if (state == null) {
     return {
       view: 'ScoreCard',
       servingPlayer: 1,
       servingSide: 'right',
-      messageVisible: false
+      messageVisible: false,
+      messageContent: null
     };
   }
   return Object.assign({}, state, actionTypes[action.type]);
