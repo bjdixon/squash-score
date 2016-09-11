@@ -28,7 +28,7 @@ class ScoreCard extends Component {
           <Button text="Let" onClick={ this.props.challenge.bind(this, this.props.messages.let) }/>
           <Button text="Stroke" onClick={ this.props.challenge.bind(this, this.props.messages.stroke) }/>
           <Button text="No Let" onClick={ this.props.challenge.bind(this, this.props.messages['no let']) }/>
-          <Button text="Undo" onClick={ this.props.undo.bind(this) }/>
+          <Button text="Undo" onClick={ this.props.undo.bind(this, this.props) }/>
         </div>
       </div>
     );
@@ -87,7 +87,13 @@ const mapDispatchToProps = (dispatch) => {
       dispatch(setScore(playerNumber, newScore));
       dispatch(setServingSide(newSide));
     },
-    undo: () => {
+    undo: (props) => {
+      if (props.score.previousRally.challenge) {
+        const secondaryMessage = props.score.previousRally.challenge + ' Decision';
+        dispatch(setMessage('Undo', secondaryMessage));
+        dispatch(setMessageVisibility(true));
+        setTimeout(() => dispatch(setMessageVisibility(false)), 2000)
+      }
       dispatch(undo());
     },
     challenge: (message) => {
