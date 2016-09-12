@@ -1,0 +1,19 @@
+@import '../../_vars.css';
+
+.field {
+  composes: field from './Container.css';
+}
+
+.colorPicker {
+  display: inline-block;
+  width: 45vw;
+  height: 45vw;
+}
+
+.colorOutput {
+  display: inline-block;
+  margin-left: $padding;
+  width: 45vw;
+  height: 45vw;
+  background-color: #fff;
+}

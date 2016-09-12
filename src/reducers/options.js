@@ -8,12 +8,20 @@ const options = (state, action) => {
     },
     'THRESHOLD': {
       threshold: action.threshold
+    },
+    'PLAYER_COLOR_1': {
+      color1: action.color
+    },
+    'PLAYER_COLOR_2': {
+      color2: action.color
     }
   };
   if (state == null) {
     return {
       player1: 'Name',
+      color1: '#0000FF',
       player2: 'Name',
+      color2: '#FF0000',
       threshold: 11
     };
   }

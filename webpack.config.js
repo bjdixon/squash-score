@@ -25,7 +25,13 @@ module.exports = {
       },
       {
         test: /\.css$/,
+        exclude: /(node_modules|bower_components)/,
         loader: 'style-loader!css-loader?modules!postcss-loader'
+      },
+      {
+        test: /\.css$/,
+        exclude: /(src)/,
+        loader: 'style-loader!css-loader'
       }
     ]
   },
