@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import tinycolor from 'tinycolor2';
 import style from './css/Container.css';
 import Button from './Button';
 import Name from './Name';
@@ -10,12 +11,14 @@ import { setScore, setServingPlayer, setServingSide, setChallenge, setWinner, un
 
 class ScoreCard extends Component {
   render() {
+    const textColor1 = tinycolor(this.props.options.color1).isLight() ? '#000000' : '#FFFFFF';
+    const textColor2 = tinycolor(this.props.options.color2).isLight() ? '#000000' : '#FFFFFF';
     const pushedRight = this.props.ui.view !== 'ScoreCard' ? style.pushedRight : '';
     return (
       <div className={ `${style.container} ${pushedRight}` }>
         <div id="top">
-          <Name player={ this.props.options.player1 } onClick={ this.props.updateServer.bind(this, 1) } isActive={ this.props.ui.servingPlayer === 1 }/>
-          <Name player={ this.props.options.player2 } onClick={ this.props.updateServer.bind(this, 2) } isActive={ this.props.ui.servingPlayer === 2 }/>
+          <Name player={ this.props.options.player1 } textColor={ textColor1 } color={ this.props.options.color1 } onClick={ this.props.updateServer.bind(this, 1) } isActive={ this.props.ui.servingPlayer === 1 }/>
+          <Name player={ this.props.options.player2 } textColor={ textColor2 } color={ this.props.options.color2 } onClick={ this.props.updateServer.bind(this, 2) } isActive={ this.props.ui.servingPlayer === 2 }/>
           <Score points={ this.props.score.previousRally.score1 }/>
           <Score points={ this.props.score.previousRally.score2 }/>
           <Service onClick={ this.props.updateServingSide.bind(this, 'left') } isActive={ this.props.ui.servingSide === 'left' }/>
