@@ -7,13 +7,13 @@
 .colorPicker {
   display: inline-block;
   width: 45vw;
-  height: 45vw;
+  height: 40vw;
 }
 
 .colorOutput {
   display: inline-block;
   margin-left: $padding;
   width: 45vw;
-  height: 45vw;
+  height: 40vw;
   background-color: #fff;
 }
