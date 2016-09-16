@@ -11,14 +11,17 @@ import { setScore, setServingPlayer, setServingSide, setChallenge, setWinner, un
 
 class ScoreCard extends Component {
   render() {
-    const textColor1 = tinycolor(this.props.options.color1).isLight() ? '#000000' : '#FFFFFF';
-    const textColor2 = tinycolor(this.props.options.color2).isLight() ? '#000000' : '#FFFFFF';
+    const servingPlayer = this.props.ui.servingPlayer;
+    const color1 = this.props.options.color1;
+    const color2 = this.props.options.color2;
+    const textColor1 = tinycolor(color1).isLight() ? '#000000' : '#FFFFFF';
+    const textColor2 = tinycolor(color2).isLight() ? '#000000' : '#FFFFFF';
     const pushedRight = this.props.ui.view !== 'ScoreCard' ? style.pushedRight : '';
     return (
       <div className={ `${style.container} ${pushedRight}` }>
         <div id="top">
-          <Name player={ this.props.options.player1 } textColor={ textColor1 } color={ this.props.options.color1 } onClick={ this.props.updateServer.bind(this, 1) } isActive={ this.props.ui.servingPlayer === 1 }/>
-          <Name player={ this.props.options.player2 } textColor={ textColor2 } color={ this.props.options.color2 } onClick={ this.props.updateServer.bind(this, 2) } isActive={ this.props.ui.servingPlayer === 2 }/>
+          <Name player={ this.props.options.player1 } textColor={ textColor1 } color={ color1 } onClick={ this.props.updateServer.bind(this, 1) } isActive={ servingPlayer === 1 }/>
+          <Name player={ this.props.options.player2 } textColor={ textColor2 } color={ color2 } onClick={ this.props.updateServer.bind(this, 2) } isActive={ servingPlayer === 2 }/>
           <Score points={ this.props.score.previousRally.score1 }/>
           <Score points={ this.props.score.previousRally.score2 }/>
           <Service onClick={ this.props.updateServingSide.bind(this, 'left') } isActive={ this.props.ui.servingSide === 'left' }/>
@@ -26,8 +29,8 @@ class ScoreCard extends Component {
           <Message title={ this.props.ui.messageTitle } secondaryMessage={ this.props.ui.secondaryMessage } isActive={ this.props.ui.messageVisible }/>
         </div>
         <div id="bottom">
-          <Button text="Hand Out" onClick={ this.props.handout.bind(this, this.props) }/>
-          <Button text="Point Won" onClick={ this.props.pointWon.bind(this, this.props) }/>
+          <Button text="Hand Out" onClick={ this.props.handout.bind(this, this.props) } color={ servingPlayer === 1 ? color2 : color1 } textColor={ servingPlayer === 1 ? textColor2 : textColor1 }/>
+          <Button text="Point Won" onClick={ this.props.pointWon.bind(this, this.props) } color={ servingPlayer === 1 ? color1 : color2 } textColor={ servingPlayer === 1 ? textColor1 : textColor2 }/ >
           <Button text="Let" onClick={ this.props.challenge.bind(this, this.props.messages.let) }/>
           <Button text="Stroke" onClick={ this.props.challenge.bind(this, this.props.messages.stroke) }/>
           <Button text="No Let" onClick={ this.props.challenge.bind(this, this.props.messages['no let']) }/>
