@@ -69,6 +69,19 @@ const mapStateToProps = (state) => {
   };
 };
 
+const incrementScore = (props, playerNumber, dispatch) => {
+  const newScore = props.score.previousRally['score' + playerNumber] + 1;
+  dispatch(setMessageVisibility(false));
+  dispatch(setScore(playerNumber, newScore));
+  if (newScore >= props.options.threshold) {
+    const otherPlayer = playerNumber === 1 ? 2 : 1;
+    if (Math.abs((props.score.previousRally['score' + playerNumber] + 1) - props.score.previousRally['score' + otherPlayer]) > 1) {
+      dispatch(setMessage('Winner', props.options['player' + playerNumber]));
+      dispatch(setMessageVisibility(true));
+    }
+  }
+};
+
 const mapDispatchToProps = (dispatch) => {
   return {
     updateServer: (playerNumber) => {
@@ -79,19 +92,13 @@ const mapDispatchToProps = (dispatch) => {
     },
     handout: (props) => {
       const playerNumber = props.ui.servingPlayer === 1 ? 2 : 1;
-      const newScore = props.score.previousRally['score' + playerNumber] + 1;
-      dispatch(setMessageVisibility(false));
-      dispatch(setScore(playerNumber, newScore));
+      incrementScore(props, playerNumber, dispatch);
       dispatch(setServingPlayer(playerNumber));
       dispatch(setServingSide('right'));
     },
     pointWon: (props) => {
-      const playerNumber = props.ui.servingPlayer;
-      const newScore = props.score.previousRally['score' + playerNumber] + 1;
-      const newSide = props.ui.servingSide === 'left' ? 'right' : 'left';
-      dispatch(setMessageVisibility(false));
-      dispatch(setScore(playerNumber, newScore));
-      dispatch(setServingSide(newSide));
+      incrementScore(props, props.ui.servingPlayer, dispatch);
+      dispatch(setServingSide(props.ui.servingSide === 'left' ? 'right' : 'left'));
     },
     undo: (props) => {
       if (props.score.previousRally.challenge) {
